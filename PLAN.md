@@ -75,14 +75,44 @@ Next.js + Tailwind + Supabase project scaffolded. *(Per CLAUDE.md.)*
 ---
 
 ## Step 2 — Auth (Supabase)
-- ☐ Supabase client setup in `/src/lib/supabase` (browser + server clients).
-- ☐ **Email auth first** (log in / sign up / log out / reset). Google login = *optional
-  stretch* — add only if quick.
-- ☐ Session handling via middleware; protect `/dashboard` routes.
-- ☐ `profiles` table + row-level security (RLS); auto-create profile on signup (trigger).
-- ☐ Verify full flow with `/verify`.
 
-**Exit:** a user can sign up, log in, and reach a protected dashboard.
+**🎯 Goal:** a visitor can sign up with email+password, log in, land on a protected
+`/dashboard` that greets them by identity, and log out — sessions persist across refresh
+(cookie-based SSR), and signed-out users hitting `/dashboard` are bounced to `/login`.
+No secrets on the client. **Demo loop:** incognito → signup → dashboard(shows email) →
+refresh(still in) → logout → `/dashboard` redirects to `/login`.
+
+**Scope decisions:** email confirmation **OFF** (instant signup→login for the showcase);
+`profiles` table **deferred to Step 3** (keep Step 2 pure auth-code; do all schema with the
+MCP live). Google login = optional stretch. *(Both flippable.)*
+
+- **2.1 Supabase client layer** — `/src/lib/supabase`: `client.ts` (browser),
+  `server.ts` (cookie-wired server client), `middleware.ts` (session-refresh helper).
+  ☑ *when:* all three import cleanly, typecheck passes, keys from env only.
+  - ☐ `client.ts` · ☐ `server.ts` · ☐ `middleware.ts` helper
+- **2.2 Middleware** — root `middleware.ts`: refresh session every request; redirect
+  unauthenticated users from `/dashboard/*`; `matcher` skips static assets.
+  ☑ *when:* expired session refreshes silently; signed-out user can't load `/dashboard`.
+  - ☐ session refresh · ☐ route protection · ☐ matcher config
+- **2.3 Sign-up** — `/signup`: typed form (client component) + server action
+  (`signUp`); error handling.
+  ☑ *when:* valid creds create a user in Supabase → Auth → Users.
+  - ☐ form · ☐ action · ☐ errors
+- **2.4 Login + logout** — `/login`: form + `signInWithPassword`; logout button →
+  `signOut`; friendly error on bad creds.
+  ☑ *when:* correct creds → `/dashboard`; logout clears session.
+  - ☐ login · ☐ logout · ☐ error states
+- **2.5 Protected dashboard** — `/dashboard`: server component reads user via
+  `getUser()`, greets by email, has logout; placeholder shell for Step 8 data.
+  ☑ *when:* logged-in users see identity; direct access while signed out redirects.
+  - ☐ server read · ☐ greeting + logout · ☐ shell
+- **2.6 Verify** — enable Email provider in Supabase; run the full incognito loop;
+  `/security-review` pass (cookie flags, no key leakage).
+  ☑ *when:* the whole signup→login→refresh→logout→bounce loop passes.
+  - ☐ enable Email provider · ☐ `/verify` loop · ☐ `/security-review`
+
+**Exit:** a user can sign up, log in, reach a protected dashboard, and log out — verified
+end-to-end and security-reviewed.
 
 ---
 
