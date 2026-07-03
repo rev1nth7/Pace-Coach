@@ -37,16 +37,16 @@ Get the workshop ready before writing feature code. One-time foundation step.
 - ⏸ **Vercel MCP** *(optional)* — deferred to Step 11.
 - ☑ Verified via `claude mcp list` (Connected).
 
-### 0.3 Claude Code skills to have on hand
-- ☐ `/run` — launch & drive the app to confirm changes work.
-- ☐ `/verify` — exercise a change end-to-end before committing.
-- ☐ `/code-review` — review diffs for correctness + cleanups.
-- ☐ `/security-review` — matters given auth + OAuth token storage.
-- ☐ `/init` — keep CLAUDE.md current as the build grows.
-- ☐ `dataviz` skill — for the pace/volume/trend charts in the UI.
-- ☐ `ralph-loop` plugin — autonomous "iterate until tests pass" loop. **Not for now** —
-  reserve it for Steps 5–6 (deterministic algorithms), and only after tests exist to
-  anchor it. It can't do credential/account setup, so it's useless in Steps 0–4.
+### 0.3 Claude Code skills to have on hand — ☑ all confirmed available
+- ☑ `/run` — launch & drive the app to confirm changes work.
+- ☑ `/verify` — exercise a change end-to-end before committing.
+- ☑ `/code-review` — review diffs for correctness + cleanups.
+- ☑ `/security-review` — matters given auth + OAuth token storage.
+- ☑ `/init` — keep CLAUDE.md current as the build grows.
+- ☑ `dataviz` skill — for the pace/volume/trend charts in the UI.
+- ☑ `ralph-loop` plugin — installed & available. **Not for now** — reserve it for
+  Steps 5–6 (deterministic algorithms), and only after tests exist to anchor it. It can't
+  do credential/account setup, so it's useless in Steps 0–4.
 
 ### 0.4 Local dev prerequisites
 - ☑ Node v22.21 + npm 11.16 confirmed (pnpm not installed → using **npm**).
