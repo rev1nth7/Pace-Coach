@@ -38,14 +38,23 @@ See PLAN.md for the full step-by-step build plan and current status.
   start a loop before the tests exist — it has nothing to anchor to.
 
 ## Current build stage
-Steps 0–1 done (local): Next.js 16 scaffolded (App Router, TS, src/, Tailwind 4, ESLint),
-deps installed (supabase, openai, zod, vitest), `src/lib/{supabase,strava,ai,plan}` created,
-`.env.local` has the OpenAI key, `.env.example` committed, git initialized on `main`,
-build/typecheck/lint all green.
+Steps 0–3 done. GitHub repo live (github.com/rev1nth7/Pace-Coach, private); Supabase
+project + keys verified in `.env.local`; Supabase MCP registered & connected (tools active).
+Milestone tags: `step-2`, `step-3`.
 
-Step 0 essentially done: GitHub repo live (github.com/rev1nth7/Pace-Coach, private) and
-Supabase project created + keys verified working (in `.env.local`). Deferred on purpose:
-Strava → Step 4, Vercel → Step 11, Supabase MCP → pending a user Personal Access Token.
+- **Step 0–1** ☑ — scaffold, deps, `src/lib/{supabase,strava,ai,plan}`, env, git.
+- **Step 2 (Auth)** ☑ — `@supabase/ssr` clients (`src/lib/supabase/{client,server,middleware}.ts`),
+  root `src/middleware.ts` (session refresh + `/dashboard` protection), `(auth)/{login,signup}`
+  pages + `actions.ts` (signup/login/signOut, open-redirect-hardened), protected
+  `/dashboard`. Email confirmation OFF in Supabase (instant signup) via Management API.
+- **Step 3 (Schema)** ☑ — 6 tables (`profiles`, `strava_accounts`, `activities`, `plans`,
+  `weeks`, `workouts`) with RLS on all; signup trigger auto-creates `profiles`; enums
+  `goal_type`/`workout_type`; generated types in `src/lib/supabase/types.ts` wired into
+  clients as `createClient<Database>`. `get_advisors` clean (HIBP is Pro-only, deferred).
 
-Next: Step 2 — Auth (email-first via Supabase; Google login optional).
+Deferred on purpose: Strava → Step 4, Vercel → Step 11.
+
+Next: **Step 4 — Strava integration** ⭐ (OAuth connect → callback stores tokens in
+`strava_accounts` → "Sync now" pulls runs into `activities`). Needs user to create a
+Strava API app (Client ID/Secret, callback domain `localhost`) and add keys to `.env.local`.
 Track progress against PLAN.md.
