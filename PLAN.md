@@ -86,10 +86,10 @@ refresh(still in) → logout → `/dashboard` redirects to `/login`.
 `profiles` table **deferred to Step 3** (keep Step 2 pure auth-code; do all schema with the
 MCP live). Google login = optional stretch. *(Both flippable.)*
 
-- **2.1 Supabase client layer** — `/src/lib/supabase`: `client.ts` (browser),
+- **2.1 Supabase client layer** ☑ — `/src/lib/supabase`: `client.ts` (browser),
   `server.ts` (cookie-wired server client), `middleware.ts` (session-refresh helper).
-  ☑ *when:* all three import cleanly, typecheck passes, keys from env only.
-  - ☐ `client.ts` · ☐ `server.ts` · ☐ `middleware.ts` helper
+  ☑ *done:* all three import cleanly, typecheck + lint pass, keys from env only.
+  - ☑ `client.ts` · ☑ `server.ts` · ☑ `middleware.ts` helper
 - **2.2 Middleware** — root `middleware.ts`: refresh session every request; redirect
   unauthenticated users from `/dashboard/*`; `matcher` skips static assets.
   ☑ *when:* expired session refreshes silently; signed-out user can't load `/dashboard`.
