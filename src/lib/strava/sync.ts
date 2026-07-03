@@ -39,7 +39,8 @@ export async function syncUserActivities(
   userId: string,
 ): Promise<{ synced: number }> {
   const accessToken = await getValidAccessToken(userId);
-  const activities = await fetchRecentActivities(accessToken);
+  // Pull a wide recent window so there's enough history for plan/coach demos.
+  const activities = await fetchRecentActivities(accessToken, 100);
   const rows = activities
     .filter((a) => RUN_TYPES.has(a.sport_type))
     .map((a) => toActivityRow(userId, a));

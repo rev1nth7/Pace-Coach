@@ -52,10 +52,13 @@ export async function disconnectStrava() {
     try {
       await deauthorize(account.access_token);
     } catch {
-      // Best-effort — remove local tokens regardless.
+      // Best-effort — remove local data regardless.
     }
   }
 
+  // Clean slate: remove synced runs and the connection so the database matches
+  // what the UI shows after disconnect (no orphaned activity rows).
+  await admin.from("activities").delete().eq("user_id", userId);
   await admin.from("strava_accounts").delete().eq("user_id", userId);
 
   revalidatePath("/dashboard");
