@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActivePlan } from "@/lib/plan/persistence";
 import { signOut } from "../(auth)/actions";
 import { disconnectStrava, syncStrava } from "./actions";
+import { PlanView } from "./PlanView";
 
 /** Map a `?strava=` status to a friendly banner. */
 function stravaBanner(
@@ -61,9 +64,9 @@ function formatDate(iso: string): string {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ strava?: string; count?: string }>;
+  searchParams: Promise<{ strava?: string; count?: string; plan?: string }>;
 }) {
-  const { strava, count } = await searchParams;
+  const { strava, count, plan } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -72,6 +75,8 @@ export default async function DashboardPage({
   if (!user) {
     redirect("/login?redirectTo=/dashboard");
   }
+
+  const activePlan = await getActivePlan(supabase, user.id);
 
   const { data: connection } = await supabase
     .from("strava_accounts")
@@ -136,6 +141,47 @@ export default async function DashboardPage({
             {banner.text}
           </p>
         ) : null}
+
+        {plan === "created" ? (
+          <p className="mt-6 rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-950 dark:text-green-300">
+            Your training plan is ready.
+          </p>
+        ) : null}
+
+        {/* Training plan */}
+        <div className="mt-8">
+          {activePlan ? (
+            <>
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+                  Your plan
+                </h2>
+                <Link
+                  href="/plan/new"
+                  className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                >
+                  New plan
+                </Link>
+              </div>
+              <PlanView data={activePlan} />
+            </>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-50">
+                No training plan yet
+              </h2>
+              <p className="mx-auto mt-1 max-w-md text-sm text-gray-500 dark:text-gray-400">
+                Generate a periodized, week-by-week plan for your next race.
+              </p>
+              <Link
+                href="/plan/new"
+                className="mt-4 inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-700 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200"
+              >
+                Create a plan
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Strava connection card */}
         <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
