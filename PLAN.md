@@ -101,10 +101,10 @@ MCP live). Google login = optional stretch. *(Both flippable.)*
   `redirectTo`); `signOut` action (wired to dashboard button in 2.5); errors via
   `?error=`. Builds as `ƒ /login`. Live check in 2.6.
   - ☑ login · ☑ logout action · ☑ error states
-- **2.5 Protected dashboard** — `/dashboard`: server component reads user via
-  `getUser()`, greets by email, has logout; placeholder shell for Step 8 data.
-  ☑ *when:* logged-in users see identity; direct access while signed out redirects.
-  - ☐ server read · ☐ greeting + logout · ☐ shell
+- **2.5 Protected dashboard** ☑ — `/dashboard`: server component reads user via
+  `getUser()` (+ defense-in-depth redirect), greets by email, logout button posts to
+  `signOut`; placeholder shell for Step 8. Builds as `ƒ /dashboard`.
+  - ☑ server read · ☑ greeting + logout · ☑ shell
 - **2.6 Verify** — enable Email provider in Supabase; run the full incognito loop;
   `/security-review` pass (cookie flags, no key leakage).
   ☑ *when:* the whole signup→login→refresh→logout→bounce loop passes.
