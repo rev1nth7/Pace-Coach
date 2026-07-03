@@ -11,7 +11,7 @@ based on actual performance vs planned workouts.
 **Stack:** Next.js 14+ (App Router, TS, `src/`) · Tailwind · Supabase (auth + Postgres) ·
 Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — see Step 10.)*
 
-**Legend:** ☐ todo · ◐ in progress · ☑ done
+**Legend:** ☐ todo · ◐ in progress · ☑ done · ⏸ deferred (intentionally, to a later step)
 
 ---
 
@@ -20,17 +20,20 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 Get the workshop ready before writing feature code. One-time foundation step.
 
 ### 0.1 Accounts & external services
-- ☐ **Supabase** — create project; note Project URL, `anon` key, `service_role` key.
-- ☐ **Strava** — create an API app at https://www.strava.com/settings/api;
-  note Client ID / Client Secret; set Authorization Callback Domain to `localhost`
-  (and later the Vercel domain).
-- ☐ **Vercel** — account + install `vercel` CLI; link the repo.
-- ☐ **GitHub** — repo created and pushed (this project reports *not* a git repo yet —
-  run `git init`, commit, and push first). A clean public repo is part of the showcase.
+- ☑ **Supabase** — project created (ref `bwczykbitphwcvbhwflu`). URL + anon + service_role
+  keys in `.env.local` and **verified working** (auth health 200, REST 200).
+- ⏸ **Strava** — **deferred to Step 4** (not needed for Auth). When we get there: create an
+  API app at https://www.strava.com/settings/api; note Client ID / Client Secret; set
+  Authorization Callback Domain to `localhost` (and later the Vercel domain).
+- ⏸ **Vercel** — deferred to Step 11 (deploy). Account + link repo then.
+- ☑ **GitHub** — repo live at https://github.com/rev1nth7/Pace-Coach; `main` pushed
+  (2 commits). Currently private; flip to public at Step 11.
 
 ### 0.2 MCP servers (tools Claude Code can drive)
 - ☐ **Supabase MCP** — manage schema, run migrations, inspect tables from within Claude.
-- ☐ **Vercel MCP** *(optional)* — manage deployments/env vars.
+  **Pending a Supabase Personal Access Token** from the user (avatar → Account → Access
+  Tokens). Would make Step 3 migrations drivable directly instead of pasting SQL.
+- ⏸ **Vercel MCP** *(optional)* — deferred to Step 11.
 - ☐ Verify with `/mcp` and a smoke call before relying on them.
 
 ### 0.3 Claude Code skills to have on hand
@@ -50,14 +53,18 @@ Get the workshop ready before writing feature code. One-time foundation step.
   done now (the prior "complete" claim was stale; nothing had actually been scaffolded).
 - ☑ Deps installed: `@supabase/supabase-js`, `@supabase/ssr`, `openai`, `zod`, `vitest`.
 - ☑ Lib structure created: `src/lib/{supabase,strava,ai,plan}`.
-- ☑ `.env.local` holds `OPENAI_API_KEY` (git-ignored). Remaining keys still to fill:
-  - ☐ `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - ☐ `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI`
+- ☑ `.env.local` (git-ignored) holds working values:
+  - ☑ `OPENAI_API_KEY`
+  - ☑ `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+  - ⏸ `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI` — fill in Step 4
 - ☑ `.env.example` committed documenting every required var (no secrets).
 - ☑ `npm run typecheck` + `npm run lint` clean; `npm run build` passes.
-- ☑ Git initialized (`main`); baseline commit made.
+- ☑ Git initialized (`main`); baseline pushed to GitHub.
 
-**Exit:** services provisioned, MCPs smoke-tested, env vars in place, app boots, repo on GitHub.
+**Exit (Step 0):** ✅ **essentially done.** Local scaffold, GitHub, and Supabase (verified)
+are complete — enough to start Step 2. Remaining items are intentionally deferred: Strava
+→ Step 4, Vercel → Step 11, Supabase MCP → whenever the user provides a Personal Access
+Token (optional convenience).
 
 ---
 

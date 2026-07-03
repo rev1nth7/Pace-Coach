@@ -43,8 +43,9 @@ deps installed (supabase, openai, zod, vitest), `src/lib/{supabase,strava,ai,pla
 `.env.local` has the OpenAI key, `.env.example` committed, git initialized on `main`,
 build/typecheck/lint all green.
 
-Remaining Step 0 (needs the user — external accounts): create Supabase project, Strava API
-app, GitHub repo, and connect the Supabase MCP; then fill those keys into `.env.local`.
+Step 0 essentially done: GitHub repo live (github.com/rev1nth7/Pace-Coach, private) and
+Supabase project created + keys verified working (in `.env.local`). Deferred on purpose:
+Strava → Step 4, Vercel → Step 11, Supabase MCP → pending a user Personal Access Token.
 
-Next after that: Step 2 — Auth (email-first via Supabase; Google login optional).
+Next: Step 2 — Auth (email-first via Supabase; Google login optional).
 Track progress against PLAN.md.
