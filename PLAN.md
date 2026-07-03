@@ -175,13 +175,12 @@ automatic token refresh and graceful disconnect/revoke handling.
   Code built + compiles; *live test pending credentials.*
 - **4.4 Token refresh** ◐ — `getValidAccessToken(userId)` in `strava/tokens.ts`: reads row,
   refreshes within 60s of expiry, rotates + persists. Code built + compiles; *live test pending.*
-- **4.5 Sync now** — server action: fetch recent runs with a valid token, normalize
-  (`distance_m`, `moving_time_s`, pace, `start_date`, `sport_type`), upsert into
-  `activities` (on conflict user+strava id). Button on dashboard. ☑ *when:* Sync makes your
-  real runs appear as `activities` rows (idempotent on re-sync).
-- **4.6 Disconnect / revoke** — disconnect button deletes the row (best-effort Strava
-  deauthorize); revoked/expired refresh shows a "reconnect" prompt, not a crash; dashboard
-  shows connection status. ☑ *when:* disconnect works; revoked access degrades gracefully.
+- **4.5 Sync now** ◐ — `strava/api.ts` (`fetchRecentActivities`, `StravaAuthError` on 401),
+  `strava/sync.ts` (normalize runs → `distance_m`/pace/etc., upsert on user+strava id),
+  `syncStrava` action + dashboard button. Code built + compiles; *live test pending creds.*
+- **4.6 Disconnect / revoke** ◐ — `disconnectStrava` action (best-effort `deauthorize`
+  then delete row); dashboard shows connected/not + recent runs + `?strava=` status
+  banners (incl. `revoked` → reconnect prompt). Code built + compiles; *live test pending.*
 - **4.7 Verify** — real end-to-end: connect → sync → activities appear → disconnect;
   `/security-review` (token storage, `state` CSRF, no client secret leak).
   ☑ *when:* full loop passes + security review clean.

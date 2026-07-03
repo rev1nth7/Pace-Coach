@@ -2,6 +2,7 @@ import "server-only";
 import {
   DEFAULT_REDIRECT_URI,
   STRAVA_AUTHORIZE_URL,
+  STRAVA_DEAUTHORIZE_URL,
   STRAVA_SCOPE,
   STRAVA_TOKEN_URL,
 } from "./constants";
@@ -73,4 +74,12 @@ export async function refreshToken(
     );
   }
   return res.json() as Promise<StravaTokenResponse>;
+}
+
+/** Best-effort revoke of our access on Strava's side (used on disconnect). */
+export async function deauthorize(accessToken: string): Promise<void> {
+  await fetch(STRAVA_DEAUTHORIZE_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 }
