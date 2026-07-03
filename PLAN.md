@@ -278,17 +278,40 @@ replace the engine. Keep all OpenAI calls server-side.*
 
 ---
 
-## Step 8 — Core UI + polish
+## Step 8 — Core UI + polish  *(reordered before Step 7 — make the engine visible)*
 *First thing any recruiter sees — worth extra time.*
-- ☐ Dashboard: current week, next workout, plan-vs-actual summary.
-- ☐ Plan view: full multi-week calendar.
-- ☐ Activity feed from synced Strava data.
-- ☐ Pace/volume/trend charts (use the `dataviz` skill).
-- ☐ Loading / empty / error states so the demo never looks broken.
-- ☐ Server components by default; `"use client"` only where interactive.
-- ☐ Small, typed components with explicit interfaces.
 
-**Exit:** a polished dashboard showing plan, workouts, activities, and progress.
+**🎯 Goal:** a logged-in user can create a training plan from a short form and see it
+rendered as a multi-week calendar on the dashboard — persisted to the DB, current week
+highlighted — so the Step 5/6 engine becomes visible before we add the AI coach.
+
+**Design defaults:** one active plan per user (creating archives the previous); create form
+on a dedicated `/plan/new` page; plan renders on `/dashboard`; snap `goalDate` to its
+race-week **Sunday** (handles the Step 5.5 note); `fromDate` = today (server-side);
+plan generation is server-side (engine is pure) and persisted via the user session (RLS
+owner-CRUD). Charts (`dataviz`) + full plan-vs-actual view are a later polish pass.
+
+- **8.1 Persistence** — `plan/persistence.ts`: `savePlan(supabase, userId, input, plan)`
+  maps engine output → `plans`/`weeks`/`workouts` insert rows; `getActivePlan(supabase,
+  userId)` loads them back. ☑ *when:* a plan round-trips DB; RLS-scoped.
+- **8.2 Create-plan form + action** — `/plan/new` page + `createPlan` server action:
+  zod-validated inputs (goalType, goalDate, daysPerWeek, fitness), snap goal to Sunday,
+  `generatePlan`, archive prior active, `savePlan`, redirect. ☑ *when:* submitting creates
+  a plan row set in DB.
+- **8.3 Plan view** — render weeks → workouts as a calendar/list; phase badges, recovery
+  markers, current-week highlight, long-run + weekly total. ☑ *when:* the plan displays
+  correctly and matches the engine output.
+- **8.4 Dashboard integration** — plan card: show the active plan if present, else a
+  "Create a plan" CTA; keep the Strava card + recent runs. ☑ *when:* dashboard shows plan
+  or CTA; server components, typed props.
+- **8.5 Verify** — create a plan in the browser end-to-end; `npm run build` + typecheck +
+  lint; `/code-review`. ☑ *when:* full create→display loop works, reviewed.
+
+**Later polish (this step or a follow-up):** activity feed, pace/volume charts (`dataviz`),
+plan-vs-actual (apply `adaptPlan` to real synced runs), loading/empty/error states.
+
+**Exit:** a logged-in user creates a plan and sees it as a multi-week calendar on the
+dashboard — the Step 5/6 engine made visible.
 
 ---
 
