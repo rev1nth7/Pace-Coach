@@ -97,10 +97,10 @@ MCP live). Google login = optional stretch. *(Both flippable.)*
 - **2.3 Sign-up** ☑ — `(auth)/signup` page + shared `AuthForm` + `signup` server
   action (`signUp`); errors surfaced via `?error=`. Builds as `ƒ /signup`.
   Live user-creation check runs in 2.6. — ☑ form · ☑ action · ☑ errors
-- **2.4 Login + logout** — `/login`: form + `signInWithPassword`; logout button →
-  `signOut`; friendly error on bad creds.
-  ☑ *when:* correct creds → `/dashboard`; logout clears session.
-  - ☐ login · ☐ logout · ☐ error states
+- **2.4 Login + logout** ☑ — `(auth)/login` page (`signInWithPassword`, honors
+  `redirectTo`); `signOut` action (wired to dashboard button in 2.5); errors via
+  `?error=`. Builds as `ƒ /login`. Live check in 2.6.
+  - ☑ login · ☑ logout action · ☑ error states
 - **2.5 Protected dashboard** — `/dashboard`: server component reads user via
   `getUser()`, greets by email, has logout; placeholder shell for Step 8 data.
   ☑ *when:* logged-in users see identity; direct access while signed out redirects.

@@ -16,6 +16,7 @@ export default async function SignupPage({
       action={signup}
       submitLabel="Sign up"
       error={error}
+      passwordAutoComplete="new-password"
       footer={
         <>
           Already have an account?{" "}
