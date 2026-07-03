@@ -204,16 +204,15 @@ weeks, a progressive long run, and a taper. Same input → same output (no rando
 - **Long run** progresses weekly, dips on recovery weeks, caps at a fraction of goal
   distance; every workout has a date on/before `goalDate`.
 
-- **5.0 Test tooling** — set `test` script to `vitest run` (headless, non-watch) so the
-  loop/`npm test` don't hang; add `test:watch`. ☑ *when:* `npm test` runs headless & reports.
-- **5.1 Types** — `plan/types.ts`: `PlanInput`, `GeneratedPlan/Week/Workout` aligned to the
-  `goal_type`/`workout_type` enums + DB insert shapes. ☑ *when:* compiles; mirrors schema.
-- **5.2 Tests FIRST** — `plan/generatePlan.test.ts`: full spec (week count vs goal/date,
-  day assignment per `daysPerWeek`, exactly 1 long + ≥1 rest/week, long-run progression +
-  recovery every 4th + taper, determinism/idempotency, dates ≤ goalDate).
-  ☑ *when:* tests written and **RED** against the stub (assertion failures, not compile errors).
-- **5.3 Framework stub** — `plan/generatePlan.ts` signature returning a typed stub so tests
-  compile & run red. ☑ *when:* `npm test` executes; failures are assertion-level.
+- **5.0 Test tooling** ☑ — `test` → `vitest run` (headless) + `test:watch`; `vitest.config.ts`
+  with `@` alias. `npm test` runs headless & reports.
+- **5.1 Types** ☑ — `plan/types.ts`: `PlanInput` (incl. `fromDate` for determinism),
+  `GeneratedPlan/Week/Workout`, mirrors `goal_type`/`workout_type` enums. Compiles.
+- **5.2 Tests FIRST** ☑ — `plan/generatePlan.test.ts`: 22 tests (clamping, Monday-aligned
+  calendar, 1 long + Monday rest + `daysPerWeek` runs, quality sessions, volume sum,
+  progression, phase ordering, recovery every 4th, taper, determinism, mid-week goal).
+  **RED**: 9 failed / 13 passed (assertion-level).
+- **5.3 Framework stub** ☑ — `plan/generatePlan.ts` typed stub; `npm test` runs red.
 - **5.4 Ralph Loop** 🔁 — run `ralph-loop` to implement `generatePlan` until all tests green.
   ☑ *when:* 100% of tests pass; output deterministic.
 - **5.5 Verify & review** — `/code-review` the generated algorithm; confirm determinism
