@@ -1,4 +1,4 @@
-and # PaceCoach — Build Plan
+# PaceCoach — Build Plan
 
 A running training-plan generator that syncs with Strava and adapts weekly plans
 based on actual performance vs planned workouts.
@@ -11,7 +11,7 @@ based on actual performance vs planned workouts.
 **Stack:** Next.js 14+ (App Router, TS, `src/`) · Tailwind · Supabase (auth + Postgres) ·
 Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — see Step 10.)*
 
-**Legend:** ☐ todo · ◐ in progress · ☑ done
+**Legend:** ☐ todo · ◐ in progress · ☑ done · ⏸ deferred (intentionally, to a later step)
 
 ---
 
@@ -20,18 +20,22 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 Get the workshop ready before writing feature code. One-time foundation step.
 
 ### 0.1 Accounts & external services
-- ☐ **Supabase** — create project; note Project URL, `anon` key, `service_role` key.
-- ☐ **Strava** — create an API app at https://www.strava.com/settings/api;
-  note Client ID / Client Secret; set Authorization Callback Domain to `localhost`
-  (and later the Vercel domain).
-- ☐ **Vercel** — account + install `vercel` CLI; link the repo.
-- ☐ **GitHub** — repo created and pushed (this project reports *not* a git repo yet —
-  run `git init`, commit, and push first). A clean public repo is part of the showcase.
+- ☑ **Supabase** — project created (ref `bwczykbitphwcvbhwflu`). URL + anon + service_role
+  keys in `.env.local` and **verified working** (auth health 200, REST 200).
+- ⏸ **Strava** — **deferred to Step 4** (not needed for Auth). When we get there: create an
+  API app at https://www.strava.com/settings/api; note Client ID / Client Secret; set
+  Authorization Callback Domain to `localhost` (and later the Vercel domain).
+- ⏸ **Vercel** — deferred to Step 11 (deploy). Account + link repo then.
+- ☑ **GitHub** — repo live at https://github.com/rev1nth7/Pace-Coach; `main` pushed
+  (2 commits). Currently private; flip to public at Step 11.
 
 ### 0.2 MCP servers (tools Claude Code can drive)
-- ☐ **Supabase MCP** — manage schema, run migrations, inspect tables from within Claude.
-- ☐ **Vercel MCP** *(optional)* — manage deployments/env vars.
-- ☐ Verify with `/mcp` and a smoke call before relying on them.
+- ☑ **Supabase MCP** — registered (local scope, scoped to project `bwczykbitphwcvbhwflu`),
+  health check **✔ Connected**. PAT stored in `~/.claude.json` (NOT in the repo). Tools
+  (`execute_sql`, `apply_migration`, `list_tables`…) activate on next session restart —
+  needed from Step 3 onward.
+- ⏸ **Vercel MCP** *(optional)* — deferred to Step 11.
+- ☑ Verified via `claude mcp list` (Connected).
 
 ### 0.3 Claude Code skills to have on hand
 - ☐ `/run` — launch & drive the app to confirm changes work.
@@ -40,19 +44,28 @@ Get the workshop ready before writing feature code. One-time foundation step.
 - ☐ `/security-review` — matters given auth + OAuth token storage.
 - ☐ `/init` — keep CLAUDE.md current as the build grows.
 - ☐ `dataviz` skill — for the pace/volume/trend charts in the UI.
+- ☐ `ralph-loop` plugin — autonomous "iterate until tests pass" loop. **Not for now** —
+  reserve it for Steps 5–6 (deterministic algorithms), and only after tests exist to
+  anchor it. It can't do credential/account setup, so it's useless in Steps 0–4.
 
 ### 0.4 Local dev prerequisites
-- ☐ Node LTS (18+/20+) and package manager confirmed.
-- ☐ `.env.local` created (git-ignored) with:
-  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI`
-  - `OPENAI_API_KEY` *(server-side only — never expose to the client)*
-  - `NEXT_PUBLIC_SITE_URL`
-- ☐ `.env.example` committed documenting every required var (no secrets).
-- ☐ `next lint` and `tsc --noEmit` run clean.
-- ☐ Dev server boots (`npm run dev`) and renders the scaffold.
+- ☑ Node v22.21 + npm 11.16 confirmed (pnpm not installed → using **npm**).
+- ☑ Next.js 16 scaffolded (App Router, TS, `src/`, Tailwind 4, ESLint) — Step 1 genuinely
+  done now (the prior "complete" claim was stale; nothing had actually been scaffolded).
+- ☑ Deps installed: `@supabase/supabase-js`, `@supabase/ssr`, `openai`, `zod`, `vitest`.
+- ☑ Lib structure created: `src/lib/{supabase,strava,ai,plan}`.
+- ☑ `.env.local` (git-ignored) holds working values:
+  - ☑ `OPENAI_API_KEY`
+  - ☑ `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+  - ⏸ `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI` — fill in Step 4
+- ☑ `.env.example` committed documenting every required var (no secrets).
+- ☑ `npm run typecheck` + `npm run lint` clean; `npm run build` passes.
+- ☑ Git initialized (`main`); baseline pushed to GitHub.
 
-**Exit:** services provisioned, MCPs smoke-tested, env vars in place, app boots, repo on GitHub.
+**Exit (Step 0):** ✅ **essentially done.** Local scaffold, GitHub, and Supabase (verified)
+are complete — enough to start Step 2. Remaining items are intentionally deferred: Strava
+→ Step 4, Vercel → Step 11, Supabase MCP → whenever the user provides a Personal Access
+Token (optional convenience).
 
 ---
 
@@ -97,24 +110,29 @@ Next.js + Tailwind + Supabase project scaffolded. *(Per CLAUDE.md.)*
 
 ---
 
-## Step 5 — Plan generation engine ⭐
+## Step 5 — Plan generation engine ⭐ 🔁 Ralph Loop candidate
 *The intellectual centerpiece — talk about this in interviews.*
+> **Workflow:** write the test scaffolding FIRST (expected plan shape for given inputs),
+> then hand it to the `ralph-loop` plugin to iterate until green. Deterministic + no
+> external deps = ideal autonomous-loop territory.
+- ☐ **Write unit tests first** (deterministic given inputs) — these anchor the Ralph Loop.
 - ☐ Core algorithm in `/src/lib/plan` (pure business logic, no React).
 - ☐ Inputs: goal distance, target date, current fitness, days/week.
 - ☐ Output: multi-week plan → weeks → typed workouts (easy, tempo, interval, long, rest).
-- ☐ Unit tests (deterministic given inputs).
 
 **Exit:** given user inputs, generate a structured, testable training plan.
 
 ---
 
-## Step 6 — Adaptive algorithm (planned vs actual) ⭐
+## Step 6 — Adaptive algorithm (planned vs actual) ⭐ 🔁 Ralph Loop candidate
 *The other half of the centerpiece — what makes this more than a CRUD app.*
+> **Workflow:** same as Step 5 — tests first, then Ralph Loop until green.
+- ☐ **Write unit tests first** covering over-/under-performance scenarios — these anchor
+  the Ralph Loop.
 - ☐ Logic in `/src/lib/plan` (or `/src/lib/adapt`): compare `activities` against planned
   `workouts` (completion, pace vs target, volume).
 - ☐ Weekly adjustment rules (scale up/down, insert recovery, shift long run).
 - ☐ Recompute upcoming weeks; preserve history.
-- ☐ Unit tests covering over-/under-performance scenarios.
 
 **Exit:** next week's plan visibly adapts to last week's actual performance.
 
