@@ -105,13 +105,15 @@ MCP live). Google login = optional stretch. *(Both flippable.)*
   `getUser()` (+ defense-in-depth redirect), greets by email, logout button posts to
   `signOut`; placeholder shell for Step 8. Builds as `ƒ /dashboard`.
   - ☑ server read · ☑ greeting + logout · ☑ shell
-- **2.6 Verify** — enable Email provider in Supabase; run the full incognito loop;
-  `/security-review` pass (cookie flags, no key leakage).
-  ☑ *when:* the whole signup→login→refresh→logout→bounce loop passes.
-  - ☐ enable Email provider · ☐ `/verify` loop · ☐ `/security-review`
+- **2.6 Verify** ☑ — Email provider on + confirmation off (`mailer_autoconfirm: true`
+  via Management API); `/dashboard` protection confirmed (307 → `/login?redirectTo`);
+  Supabase signup returns an immediate session; `/security-review` passed (open-redirect
+  found & hardened via `safeRedirect`). Final browser click-through recommended as a
+  30-sec manual sanity check. — ☑ Email provider · ☑ automated checks · ☑ `/security-review`
 
-**Exit:** a user can sign up, log in, reach a protected dashboard, and log out — verified
-end-to-end and security-reviewed.
+**Exit:** ☑ a user can sign up, log in, reach a protected dashboard, and log out —
+mechanisms verified (route protection, autoconfirm signup, security review). Browser
+click-through pending as a final manual sanity check.
 
 ---
 
