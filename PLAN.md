@@ -291,21 +291,18 @@ race-week **Sunday** (handles the Step 5.5 note); `fromDate` = today (server-sid
 plan generation is server-side (engine is pure) and persisted via the user session (RLS
 owner-CRUD). Charts (`dataviz`) + full plan-vs-actual view are a later polish pass.
 
-- **8.1 Persistence** — `plan/persistence.ts`: `savePlan(supabase, userId, input, plan)`
-  maps engine output → `plans`/`weeks`/`workouts` insert rows; `getActivePlan(supabase,
-  userId)` loads them back. ☑ *when:* a plan round-trips DB; RLS-scoped.
-- **8.2 Create-plan form + action** — `/plan/new` page + `createPlan` server action:
-  zod-validated inputs (goalType, goalDate, daysPerWeek, fitness), snap goal to Sunday,
-  `generatePlan`, archive prior active, `savePlan`, redirect. ☑ *when:* submitting creates
-  a plan row set in DB.
-- **8.3 Plan view** — render weeks → workouts as a calendar/list; phase badges, recovery
-  markers, current-week highlight, long-run + weekly total. ☑ *when:* the plan displays
-  correctly and matches the engine output.
-- **8.4 Dashboard integration** — plan card: show the active plan if present, else a
-  "Create a plan" CTA; keep the Strava card + recent runs. ☑ *when:* dashboard shows plan
-  or CTA; server components, typed props.
-- **8.5 Verify** — create a plan in the browser end-to-end; `npm run build` + typecheck +
-  lint; `/code-review`. ☑ *when:* full create→display loop works, reviewed.
+- **8.1 Persistence** ☑ — `plan/persistence.ts`: `savePlan` (replace-on-create: delete
+  cascades old plan → one plan at a time), `getActivePlan` loads plan+weeks+workouts.
+  RLS-scoped via user session. Verified: plan round-trips DB.
+- **8.2 Create-plan form + action** ☑ — `/plan/new` + `createPlan` (zod-validated, snaps
+  goal to Sunday, future-date check, `generatePlan` → `savePlan`). Verified: creates rows.
+- **8.3 Plan view** ☑ — `PlanView`: weeks as a 7-day color strip (Long/Tempo/Intvl/Easy/
+  Rest), phase badges, recovery markers, current-week highlight, weekly total.
+- **8.4 Dashboard integration** ☑ — plan card (active plan) or "Create a plan" CTA; Strava
+  card + recent runs kept below. Server components, typed props.
+- **8.5 Verify** ☑ — browser end-to-end (created a half plan: 8 weeks, 56 workouts, DB
+  verified); build + typecheck + lint + 34 tests green; reviewed (caught & fixed the
+  orphaned-archived-plan issue).
 
 **Later polish (this step or a follow-up):** activity feed, pace/volume charts (`dataviz`),
 plan-vs-actual (apply `adaptPlan` to real synced runs), loading/empty/error states.
