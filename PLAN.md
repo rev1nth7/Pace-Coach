@@ -118,12 +118,31 @@ click-through pending as a final manual sanity check.
 ---
 
 ## Step 3 — Data model & schema
-- ☐ Tables: `profiles`, `plans`, `weeks`, `workouts`, `activities`, `strava_accounts`.
-- ☐ Migrations (via Supabase MCP) applied.
-- ☐ RLS policies on every table (user owns their rows).
-- ☐ Generate TypeScript types from the schema.
 
-**Exit:** typed schema with RLS; types importable across the app.
+**🎯 Goal:** a fully typed Postgres schema with RLS on every table (each user sees only
+their own rows), a trigger that auto-creates a `profiles` row on signup, and generated
+TypeScript types importable across the app.
+
+**Design:** `user_id` denormalized onto every table (simple/fast RLS: `user_id = auth.uid()`);
+Postgres enums for `goal_type` (5k/10k/half/full) and `workout.type`
+(easy/tempo/interval/long/rest); `workout.activity_id` FK links a planned workout to the
+Strava activity that fulfilled it (1:1, for the Step 6 adaptive engine); `strava_accounts`
+tokens are owner-scoped and written server-side only.
+
+- **3.1 profiles** ☑ — 1:1 with `auth.users` + auto-create trigger + RLS + backfill.
+  Verified: test signup auto-created a profile row; cascade-delete confirmed.
+- **3.2 strava_accounts** ☑ — token storage; owner-read RLS, writes service-role only
+  (client can't forge tokens).
+- **3.3 activities** ☑ — normalized runs; owner-read RLS; unique (user, strava id).
+- **3.4 plans + weeks + workouts** ☑ — enums (`goal_type`, `workout_type`), FKs,
+  `workout.activity_id` → matched run, owner full-CRUD RLS on all three.
+- **3.5 TS types** ☑ — generated → `src/lib/supabase/types.ts`, wired into all three
+  clients (`createClient<Database>`); typecheck + build pass.
+- **3.6 Verify** ☑ — `get_advisors`: fixed 2 SECURITY DEFINER warnings (revoked public
+  EXECUTE on trigger fn); RLS clean on all 6 tables. *(Leaked-password/HIBP check is
+  Supabase Pro-only — accepted limitation on free tier.)*
+
+**Exit:** ☑ typed schema with RLS on every table; types importable across the app.
 
 ---
 
