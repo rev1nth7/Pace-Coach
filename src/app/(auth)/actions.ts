@@ -5,6 +5,21 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 /**
+ * Only allow redirects to internal, single-slash paths. Rejects absolute URLs
+ * and protocol-relative (`//host`) or backslash tricks to prevent open redirects.
+ */
+function safeRedirect(target: string): string {
+  if (
+    target.startsWith("/") &&
+    !target.startsWith("//") &&
+    !target.startsWith("/\\")
+  ) {
+    return target;
+  }
+  return "/dashboard";
+}
+
+/**
  * Create a new account with email + password.
  * Email confirmation is disabled in Supabase for this showcase, so a
  * successful signup yields a session immediately and we can go to /dashboard.
@@ -36,7 +51,9 @@ export async function signup(formData: FormData) {
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const redirectTo = String(formData.get("redirectTo") ?? "/dashboard") || "/dashboard";
+  const redirectTo = safeRedirect(
+    String(formData.get("redirectTo") ?? "/dashboard") || "/dashboard",
+  );
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,7 +65,7 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect(redirectTo.startsWith("/") ? redirectTo : "/dashboard");
+  redirect(redirectTo);
 }
 
 /** Sign the current user out and return them to the login page. */
