@@ -190,6 +190,8 @@ export type Database = {
       }
       weeks: {
         Row: {
+          coach_note: string | null
+          coach_note_generated_at: string | null
           created_at: string
           focus: string | null
           id: string
@@ -201,6 +203,8 @@ export type Database = {
           week_number: number
         }
         Insert: {
+          coach_note?: string | null
+          coach_note_generated_at?: string | null
           created_at?: string
           focus?: string | null
           id?: string
@@ -212,6 +216,8 @@ export type Database = {
           week_number: number
         }
         Update: {
+          coach_note?: string | null
+          coach_note_generated_at?: string | null
           created_at?: string
           focus?: string | null
           id?: string

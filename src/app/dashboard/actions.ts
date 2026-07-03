@@ -7,6 +7,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { StravaAuthError } from "@/lib/strava/api";
 import { deauthorize } from "@/lib/strava/oauth";
 import { syncUserActivities } from "@/lib/strava/sync";
+import { getActivePlan } from "@/lib/plan/persistence";
+import { addDays } from "@/lib/plan/dates";
+import { buildCoachInput } from "@/lib/ai/coachInput";
+import { generateCoachNote } from "@/lib/ai/coach";
 
 async function requireUserId(): Promise<string> {
   const supabase = await createClient();
@@ -63,4 +67,44 @@ export async function disconnectStrava() {
 
   revalidatePath("/dashboard");
   redirect("/dashboard?strava=disconnected");
+}
+
+/** Generate (or regenerate) the AI coaching note for the current plan week. */
+export async function refreshCoachNote() {
+  const userId = await requireUserId();
+  const supabase = await createClient();
+
+  const activePlan = await getActivePlan(supabase, userId);
+  if (!activePlan) {
+    redirect("/dashboard");
+  }
+
+  const { data: activities } = await supabase
+    .from("activities")
+    .select("start_date, distance_m, average_pace_s_per_km")
+    .eq("user_id", userId);
+
+  const input = buildCoachInput(activePlan, activities ?? []);
+  const note = await generateCoachNote(input);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const currentWeek =
+    activePlan.weeks.find(
+      (w) => w.start_date <= today && today <= addDays(w.start_date, 6),
+    ) ??
+    activePlan.weeks.find((w) => w.start_date > today) ??
+    activePlan.weeks[activePlan.weeks.length - 1];
+
+  if (currentWeek) {
+    await supabase
+      .from("weeks")
+      .update({
+        coach_note: note,
+        coach_note_generated_at: new Date().toISOString(),
+      })
+      .eq("id", currentWeek.id);
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard?coach=updated");
 }

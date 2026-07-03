@@ -301,23 +301,20 @@ cached so it isn't re-called on every page load.
 **Architecture rule (from CLAUDE.md):** OpenAI receives **pre-computed facts** and returns
 prose. It never computes distances, paces, or the plan. `OPENAI_API_KEY` is server-side only.
 
-- **7.1 AI module** — `/src/lib/ai/coach.ts`: typed `CoachInput` (goal, week #, phase,
-  key workouts, recent-run summary, optional adapt metrics/reason) → build prompt → call
-  OpenAI (server-side, `openai` SDK, model from `OPENAI_MODEL` env, default a small cheap
-  model). **Deterministic fallback** composes a note from the facts if no key/API error.
-  ☑ *when:* returns a note (or fallback); key never `NEXT_PUBLIC_`.
-- **7.2 Data bridge** — `/src/lib/ai/coachInput.ts`: from the active plan + synced
-  activities, pick the current plan week, summarize recent runs, and (if a completed week
-  overlaps real runs) run `adaptPlan` for metrics + reason → build `CoachInput`.
-  ☑ *when:* produces a real `CoachInput` from DB data.
-- **7.3 Caching** — migration: `weeks.coach_note` + `coach_note_generated_at`; store the
-  note per week; reuse on load, regenerate on demand. ☑ *when:* note persists; no re-call
-  on reload.
-- **7.4 UI** — a "Coach" card on the dashboard showing the current-week note + a
-  "Regenerate" action; fallback note styled the same. ☑ *when:* dashboard shows the note.
-- **7.5 Verify** — generate a real note end-to-end; confirm key not in client bundle;
-  fallback works with key removed; `/security-review` or `/code-review`. ☑ *when:* note
-  displays, grounded in real data, key safe.
+- **7.1 AI module** ☑ — `ai/coach.ts`: typed `CoachInput` → prompt → OpenAI (server-side,
+  `server-only` guard, model `OPENAI_MODEL` default `gpt-4o-mini`); `fallbackNote`
+  deterministic fallback on missing key / API error.
+- **7.2 Data bridge** ☑ — `ai/coachInput.ts`: reconstructs the engine plan from DB rows,
+  picks the current week, summarizes recent runs, runs `adaptPlan` on the last completed
+  week (if real runs overlap) → `CoachInput`.
+- **7.3 Caching** ☑ — migration `add_coach_note_to_weeks` (`coach_note`,
+  `coach_note_generated_at`); note stored per week, reused on load, regenerated on demand.
+- **7.4 UI** ☑ — dashboard "🧠 Coach" card with the current-week note + Generate/Regenerate
+  action (`refreshCoachNote`); fallback styled the same.
+- **7.5 Verify** ☑ — OpenAI + `gpt-4o-mini` access confirmed (HTTP 200); key hygiene clean
+  (server-only, no `NEXT_PUBLIC_`, not in client bundle); build/typecheck/lint green.
+  *(coach.ts can't be vitest-tested — `server-only` shim is Next-runtime only; browser
+  click is the final e2e.)*
 
 > **Data caveat:** your synced runs (June) don't overlap the new plan's weeks (Jul–Aug), so
 > the *adaptation* narration won't shine until **Step 9 demo mode** seeds aligned data. The

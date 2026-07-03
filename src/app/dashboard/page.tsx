@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActivePlan } from "@/lib/plan/persistence";
+import { addDays } from "@/lib/plan/dates";
 import { signOut } from "../(auth)/actions";
-import { disconnectStrava, syncStrava } from "./actions";
+import { disconnectStrava, refreshCoachNote, syncStrava } from "./actions";
 import { PlanView } from "./PlanView";
 
 /** Map a `?strava=` status to a friendly banner. */
@@ -77,6 +78,15 @@ export default async function DashboardPage({
   }
 
   const activePlan = await getActivePlan(supabase, user.id);
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const currentWeek = activePlan
+    ? (activePlan.weeks.find(
+        (w) => w.start_date <= todayIso && todayIso <= addDays(w.start_date, 6),
+      ) ??
+      activePlan.weeks.find((w) => w.start_date > todayIso) ??
+      activePlan.weeks[activePlan.weeks.length - 1])
+    : null;
 
   const { data: connection } = await supabase
     .from("strava_accounts")
@@ -163,6 +173,33 @@ export default async function DashboardPage({
                   New plan
                 </Link>
               </div>
+
+              {/* AI coach note */}
+              <div className="mb-4 rounded-2xl border border-gray-200 bg-gradient-to-br from-indigo-50 to-white p-5 dark:border-gray-800 dark:from-indigo-950/40 dark:to-gray-900">
+                <div className="flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span>🧠 Coach</span>
+                    {currentWeek ? (
+                      <span className="text-xs font-normal text-gray-400">
+                        week {currentWeek.week_number}
+                      </span>
+                    ) : null}
+                  </h3>
+                  <form action={refreshCoachNote}>
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-600 transition hover:bg-white dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                    >
+                      {currentWeek?.coach_note ? "Regenerate" : "Generate note"}
+                    </button>
+                  </form>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-gray-700 dark:text-gray-200">
+                  {currentWeek?.coach_note ??
+                    "Generate an AI coaching note for this week — grounded in your plan and recent runs."}
+                </p>
+              </div>
+
               <PlanView data={activePlan} />
             </>
           ) : (
