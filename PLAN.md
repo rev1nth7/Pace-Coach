@@ -291,15 +291,40 @@ green, reviewed, deterministic. Metrics + reason ready to feed the Step 7 AI coa
 ## Step 7 — AI Coach (OpenAI) ⭐ (your "AI" bullet)
 *A coaching layer on top of the deterministic algorithm — explains the data, doesn't
 replace the engine. Keep all OpenAI calls server-side.*
-- ☐ `/src/lib/ai` module: build a prompt from the user's plan + planned-vs-actual data
-  (Step 6 output) and call OpenAI via a server action / route handler.
-- ☐ **Weekly coach note:** natural-language summary + rationale for this week's
-  adjustments ("skipped 2 long runs → eased volume, added recovery").
-- ☐ Cache/store the generated note (avoid re-calling on every page load; save cost).
-- ☐ Graceful fallback if the API errors or the key is missing (show the raw stats).
-- ☐ *Optional stretch:* a chat box to ask questions about your training.
 
-**Exit:** each week shows an AI-written coaching summary grounded in the user's real data.
+**🎯 Goal:** the dashboard shows a short (2–4 sentence) AI-written coaching note for the
+current week — grounded in **real numbers** the engine computed (plan phase, this week's
+workouts, recent run summary, any adaptation) — that the LLM only *narrates*, never invents.
+Server-side only; graceful fallback to a deterministic note if the key/API is missing;
+cached so it isn't re-called on every page load.
+
+**Architecture rule (from CLAUDE.md):** OpenAI receives **pre-computed facts** and returns
+prose. It never computes distances, paces, or the plan. `OPENAI_API_KEY` is server-side only.
+
+- **7.1 AI module** — `/src/lib/ai/coach.ts`: typed `CoachInput` (goal, week #, phase,
+  key workouts, recent-run summary, optional adapt metrics/reason) → build prompt → call
+  OpenAI (server-side, `openai` SDK, model from `OPENAI_MODEL` env, default a small cheap
+  model). **Deterministic fallback** composes a note from the facts if no key/API error.
+  ☑ *when:* returns a note (or fallback); key never `NEXT_PUBLIC_`.
+- **7.2 Data bridge** — `/src/lib/ai/coachInput.ts`: from the active plan + synced
+  activities, pick the current plan week, summarize recent runs, and (if a completed week
+  overlaps real runs) run `adaptPlan` for metrics + reason → build `CoachInput`.
+  ☑ *when:* produces a real `CoachInput` from DB data.
+- **7.3 Caching** — migration: `weeks.coach_note` + `coach_note_generated_at`; store the
+  note per week; reuse on load, regenerate on demand. ☑ *when:* note persists; no re-call
+  on reload.
+- **7.4 UI** — a "Coach" card on the dashboard showing the current-week note + a
+  "Regenerate" action; fallback note styled the same. ☑ *when:* dashboard shows the note.
+- **7.5 Verify** — generate a real note end-to-end; confirm key not in client bundle;
+  fallback works with key removed; `/security-review` or `/code-review`. ☑ *when:* note
+  displays, grounded in real data, key safe.
+
+> **Data caveat:** your synced runs (June) don't overlap the new plan's weeks (Jul–Aug), so
+> the *adaptation* narration won't shine until **Step 9 demo mode** seeds aligned data. The
+> coach still gives a grounded current-week note now (phase, workouts, recent-run summary).
+
+**Exit:** each week shows an AI-written coaching summary grounded in the user's real data,
+with a safe server-side call and a working fallback.
 
 ---
 
