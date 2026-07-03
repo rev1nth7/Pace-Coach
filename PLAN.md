@@ -148,15 +148,46 @@ tokens are owner-scoped and written server-side only.
 
 ## Step 4 — Strava integration (OAuth + sync) ⭐
 *One half of the showcase — a real third-party OAuth integration.*
-- ☐ Strava OAuth flow: connect → authorize → callback stores tokens in
-  `strava_accounts` (with refresh-token rotation).
-- ☐ Token refresh helper in `/src/lib/strava`.
-- ☐ **Manual "Sync now" button** pulls recent runs, normalizes (distance, pace,
-  duration, date), upserts into `activities`. *(No webhooks/cron — same skill shown,
-  far less infra.)*
-- ☐ Handle disconnect / revoked access gracefully.
 
-**Exit:** a connected user's Strava runs appear as normalized activities via a Sync button.
+**🎯 Goal:** a logged-in user can connect their Strava account (real OAuth), click
+**"Sync now"**, and see their recent runs appear as normalized `activities` rows — with
+automatic token refresh and graceful disconnect/revoke handling.
+
+**Design / decisions (sensible defaults, flippable):**
+- **Scope `activity:read`** (public activities). *(Flip to `activity:read_all` only if you
+  want private runs to sync too.)*
+- **Manual sync only** — a "Sync now" button, no webhooks/cron (same skill, far less infra).
+- **Sync window:** most recent ~30 activities (or last 90 days), runs only.
+- `STRAVA_CLIENT_SECRET` is **server-side only** (never `NEXT_PUBLIC_`); token writes use
+  the **service-role** client (RLS blocks client writes); OAuth **`state`** param guards CSRF.
+
+- **4.0 Credentials** (needs you) — create Strava API app (Client ID/Secret, callback
+  domain `localhost`); add `STRAVA_CLIENT_ID`/`STRAVA_CLIENT_SECRET`/`STRAVA_REDIRECT_URI`
+  to `.env.local`. ☑ *when:* env vars present, app boots, `.env.example` already documents them.
+- **4.1 Strava lib** — `/src/lib/strava`: constants (auth/token/api URLs, scope), typed
+  token + activity shapes, `buildAuthorizeUrl(state)`, `exchangeCode(code)`,
+  `refreshToken(rt)`. ☑ *when:* helpers typed, typecheck + lint pass.
+- **4.2 Connect flow** — `GET /api/strava/connect`: sets a signed `state` cookie and
+  redirects to Strava's authorize page; "Connect Strava" button on `/dashboard`.
+  ☑ *when:* clicking Connect lands you on Strava's authorize screen.
+- **4.3 Callback** — `GET /api/strava/callback`: validate `state`, exchange code for
+  tokens, upsert into `strava_accounts` (athlete id, expires_at, scope) via service role,
+  redirect to dashboard. ☑ *when:* after authorizing, one `strava_accounts` row exists for you.
+- **4.4 Token refresh** — `getValidAccessToken(userId)`: read row, refresh if expired,
+  rotate + persist new refresh token. ☑ *when:* an expired token auto-refreshes & persists.
+- **4.5 Sync now** — server action: fetch recent runs with a valid token, normalize
+  (`distance_m`, `moving_time_s`, pace, `start_date`, `sport_type`), upsert into
+  `activities` (on conflict user+strava id). Button on dashboard. ☑ *when:* Sync makes your
+  real runs appear as `activities` rows (idempotent on re-sync).
+- **4.6 Disconnect / revoke** — disconnect button deletes the row (best-effort Strava
+  deauthorize); revoked/expired refresh shows a "reconnect" prompt, not a crash; dashboard
+  shows connection status. ☑ *when:* disconnect works; revoked access degrades gracefully.
+- **4.7 Verify** — real end-to-end: connect → sync → activities appear → disconnect;
+  `/security-review` (token storage, `state` CSRF, no client secret leak).
+  ☑ *when:* full loop passes + security review clean.
+
+**Exit:** a connected user's Strava runs appear as normalized activities via a Sync button;
+tokens refresh automatically; disconnect/revoke handled cleanly.
 
 ---
 
