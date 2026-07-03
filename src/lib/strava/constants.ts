@@ -12,3 +12,6 @@ export const STRAVA_SCOPE = "activity:read";
 
 /** Default redirect target if STRAVA_REDIRECT_URI is not set. */
 export const DEFAULT_REDIRECT_URI = "http://localhost:3000/api/strava/callback";
+
+/** httpOnly cookie holding the OAuth `state` value for CSRF protection. */
+export const STRAVA_STATE_COOKIE = "strava_oauth_state";

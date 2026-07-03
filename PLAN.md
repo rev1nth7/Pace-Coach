@@ -167,14 +167,14 @@ automatic token refresh and graceful disconnect/revoke handling.
 - **4.1 Strava lib** ☑ — `/src/lib/strava`: `constants.ts` (auth/token/api/deauth URLs,
   scope), `types.ts` (token + activity shapes), `oauth.ts` (`buildAuthorizeUrl`,
   `exchangeCode`, `refreshToken`, `server-only` guard). Typecheck + lint pass.
-- **4.2 Connect flow** — `GET /api/strava/connect`: sets a signed `state` cookie and
-  redirects to Strava's authorize page; "Connect Strava" button on `/dashboard`.
-  ☑ *when:* clicking Connect lands you on Strava's authorize screen.
-- **4.3 Callback** — `GET /api/strava/callback`: validate `state`, exchange code for
-  tokens, upsert into `strava_accounts` (athlete id, expires_at, scope) via service role,
-  redirect to dashboard. ☑ *when:* after authorizing, one `strava_accounts` row exists for you.
-- **4.4 Token refresh** — `getValidAccessToken(userId)`: read row, refresh if expired,
-  rotate + persist new refresh token. ☑ *when:* an expired token auto-refreshes & persists.
+- **4.2 Connect flow** ◐ — `GET /api/strava/connect`: httpOnly `state` cookie + redirect
+  to Strava; "Connect Strava" button on `/dashboard`. Code built + compiles; *live test
+  pending credentials (4.0).*
+- **4.3 Callback** ◐ — `GET /api/strava/callback`: validate `state`, `exchangeCode`, upsert
+  into `strava_accounts` via service role, redirect with `?strava=connected|denied|error`.
+  Code built + compiles; *live test pending credentials.*
+- **4.4 Token refresh** ◐ — `getValidAccessToken(userId)` in `strava/tokens.ts`: reads row,
+  refreshes within 60s of expiry, rotates + persists. Code built + compiles; *live test pending.*
 - **4.5 Sync now** — server action: fetch recent runs with a valid token, normalize
   (`distance_m`, `moving_time_s`, pace, `start_date`, `sport_type`), upsert into
   `activities` (on conflict user+strava id). Button on dashboard. ☑ *when:* Sync makes your

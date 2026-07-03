@@ -1,10 +1,8 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { STRAVA_STATE_COOKIE } from "@/lib/strava/constants";
 import { buildAuthorizeUrl } from "@/lib/strava/oauth";
-
-/** Cookie holding the OAuth `state` value for CSRF protection on callback. */
-export const STRAVA_STATE_COOKIE = "strava_oauth_state";
 
 /**
  * Kicks off the Strava OAuth flow: requires a logged-in user, stores a random
