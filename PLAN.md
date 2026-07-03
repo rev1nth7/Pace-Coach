@@ -94,10 +94,9 @@ MCP live). Google login = optional stretch. *(Both flippable.)*
   unauthenticated users from `/dashboard/*` (preserving refreshed cookies); `matcher`
   skips Next internals + static assets. Build shows `ƒ Proxy (Middleware)` registered.
   Full redirect check runs in 2.6. — ☑ session refresh · ☑ route protection · ☑ matcher
-- **2.3 Sign-up** — `/signup`: typed form (client component) + server action
-  (`signUp`); error handling.
-  ☑ *when:* valid creds create a user in Supabase → Auth → Users.
-  - ☐ form · ☐ action · ☐ errors
+- **2.3 Sign-up** ☑ — `(auth)/signup` page + shared `AuthForm` + `signup` server
+  action (`signUp`); errors surfaced via `?error=`. Builds as `ƒ /signup`.
+  Live user-creation check runs in 2.6. — ☑ form · ☑ action · ☑ errors
 - **2.4 Login + logout** — `/login`: form + `signInWithPassword`; logout button →
   `signOut`; friendly error on bad creds.
   ☑ *when:* correct creds → `/dashboard`; logout clears session.
