@@ -90,10 +90,10 @@ MCP live). Google login = optional stretch. *(Both flippable.)*
   `server.ts` (cookie-wired server client), `middleware.ts` (session-refresh helper).
   ☑ *done:* all three import cleanly, typecheck + lint pass, keys from env only.
   - ☑ `client.ts` · ☑ `server.ts` · ☑ `middleware.ts` helper
-- **2.2 Middleware** — root `middleware.ts`: refresh session every request; redirect
-  unauthenticated users from `/dashboard/*`; `matcher` skips static assets.
-  ☑ *when:* expired session refreshes silently; signed-out user can't load `/dashboard`.
-  - ☐ session refresh · ☐ route protection · ☐ matcher config
+- **2.2 Middleware** ☑ — `src/middleware.ts`: refresh session every request; redirect
+  unauthenticated users from `/dashboard/*` (preserving refreshed cookies); `matcher`
+  skips Next internals + static assets. Build shows `ƒ Proxy (Middleware)` registered.
+  Full redirect check runs in 2.6. — ☑ session refresh · ☑ route protection · ☑ matcher
 - **2.3 Sign-up** — `/signup`: typed form (client component) + server action
   (`signUp`); error handling.
   ☑ *when:* valid creds create a user in Supabase → Auth → Users.
