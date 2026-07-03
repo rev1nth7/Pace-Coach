@@ -164,9 +164,9 @@ automatic token refresh and graceful disconnect/revoke handling.
 - **4.0 Credentials** (needs you) — create Strava API app (Client ID/Secret, callback
   domain `localhost`); add `STRAVA_CLIENT_ID`/`STRAVA_CLIENT_SECRET`/`STRAVA_REDIRECT_URI`
   to `.env.local`. ☑ *when:* env vars present, app boots, `.env.example` already documents them.
-- **4.1 Strava lib** — `/src/lib/strava`: constants (auth/token/api URLs, scope), typed
-  token + activity shapes, `buildAuthorizeUrl(state)`, `exchangeCode(code)`,
-  `refreshToken(rt)`. ☑ *when:* helpers typed, typecheck + lint pass.
+- **4.1 Strava lib** ☑ — `/src/lib/strava`: `constants.ts` (auth/token/api/deauth URLs,
+  scope), `types.ts` (token + activity shapes), `oauth.ts` (`buildAuthorizeUrl`,
+  `exchangeCode`, `refreshToken`, `server-only` guard). Typecheck + lint pass.
 - **4.2 Connect flow** — `GET /api/strava/connect`: sets a signed `state` cookie and
   redirects to Strava's authorize page; "Connect Strava" button on `/dashboard`.
   ☑ *when:* clicking Connect lands you on Strava's authorize screen.
