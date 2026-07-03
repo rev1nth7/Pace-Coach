@@ -252,14 +252,14 @@ Step 7 AI coach.
   factors, history preserved, upcoming scaled, out-of-week ignored, no-runs → scale_down,
   last-week no-op, determinism). **RED**: 6 failing.
 - **6.3 Framework stub** ☑ — `plan/adaptPlan.ts` typed no-op stub; `npm test` runs red.
-- **6.4 Ralph Loop** 🔁 — implement `adaptPlan` until green. **Start with a completion
-  promise / max-iterations so it self-terminates** (lesson from Step 5). ☑ *when:* all tests
-  green, deterministic.
-- **6.5 Verify & review** — `/code-review`; confirm determinism + history preservation.
-  ☑ *when:* green + reviewed.
+- **6.4 Ralph Loop** ☑ 🔁 — implemented `adaptPlan`; **all 34 tests green** (12 adapt + 22
+  plan), typecheck + lint clean. Loop started with `--completion-promise ADAPTDONE
+  --max-iterations 8` → self-terminated cleanly (no manual cancel needed).
+- **6.5 Verify & review** ☑ — reviewed: pure/deterministic, history preserved (weeks ≤ N
+  unchanged), `hold` is a no-op, per-workout scaling with recomputed totals.
 
-**Exit:** next week's plan visibly adapts to last week's actual performance (tests green,
-reviewed, deterministic).
+**Exit:** ☑ next week's plan visibly adapts to last week's actual performance — tests
+green, reviewed, deterministic. Metrics + reason ready to feed the Step 7 AI coach.
 
 ---
 
