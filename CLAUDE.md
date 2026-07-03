@@ -38,6 +38,13 @@ See PLAN.md for the full step-by-step build plan and current status.
   start a loop before the tests exist — it has nothing to anchor to.
 
 ## Current build stage
-Step 1 complete: Next.js + Tailwind + Supabase project scaffolded.
-Next: Step 0 (setup: skills, MCPs, accounts, env vars) then Step 2 — Auth (email-first
-via Supabase; Google login optional). Track progress against PLAN.md.
+Steps 0–1 done (local): Next.js 16 scaffolded (App Router, TS, src/, Tailwind 4, ESLint),
+deps installed (supabase, openai, zod, vitest), `src/lib/{supabase,strava,ai,plan}` created,
+`.env.local` has the OpenAI key, `.env.example` committed, git initialized on `main`,
+build/typecheck/lint all green.
+
+Remaining Step 0 (needs the user — external accounts): create Supabase project, Strava API
+app, GitHub repo, and connect the Supabase MCP; then fill those keys into `.env.local`.
+
+Next after that: Step 2 — Auth (email-first via Supabase; Google login optional).
+Track progress against PLAN.md.

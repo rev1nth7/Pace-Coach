@@ -45,15 +45,17 @@ Get the workshop ready before writing feature code. One-time foundation step.
   anchor it. It can't do credential/account setup, so it's useless in Steps 0–4.
 
 ### 0.4 Local dev prerequisites
-- ☐ Node LTS (18+/20+) and package manager confirmed.
-- ☐ `.env.local` created (git-ignored) with:
-  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-  - `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI`
-  - `OPENAI_API_KEY` *(server-side only — never expose to the client)*
-  - `NEXT_PUBLIC_SITE_URL`
-- ☐ `.env.example` committed documenting every required var (no secrets).
-- ☐ `next lint` and `tsc --noEmit` run clean.
-- ☐ Dev server boots (`npm run dev`) and renders the scaffold.
+- ☑ Node v22.21 + npm 11.16 confirmed (pnpm not installed → using **npm**).
+- ☑ Next.js 16 scaffolded (App Router, TS, `src/`, Tailwind 4, ESLint) — Step 1 genuinely
+  done now (the prior "complete" claim was stale; nothing had actually been scaffolded).
+- ☑ Deps installed: `@supabase/supabase-js`, `@supabase/ssr`, `openai`, `zod`, `vitest`.
+- ☑ Lib structure created: `src/lib/{supabase,strava,ai,plan}`.
+- ☑ `.env.local` holds `OPENAI_API_KEY` (git-ignored). Remaining keys still to fill:
+  - ☐ `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+  - ☐ `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `STRAVA_REDIRECT_URI`
+- ☑ `.env.example` committed documenting every required var (no secrets).
+- ☑ `npm run typecheck` + `npm run lint` clean; `npm run build` passes.
+- ☑ Git initialized (`main`); baseline commit made.
 
 **Exit:** services provisioned, MCPs smoke-tested, env vars in place, app boots, repo on GitHub.
 
