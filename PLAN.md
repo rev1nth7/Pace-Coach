@@ -157,36 +157,32 @@ automatic token refresh and graceful disconnect/revoke handling.
 - **Scope `activity:read`** (public activities). *(Flip to `activity:read_all` only if you
   want private runs to sync too.)*
 - **Manual sync only** — a "Sync now" button, no webhooks/cron (same skill, far less infra).
-- **Sync window:** most recent ~30 activities (or last 90 days), runs only.
+- **Sync window:** most recent 100 activities, runs only.
 - `STRAVA_CLIENT_SECRET` is **server-side only** (never `NEXT_PUBLIC_`); token writes use
   the **service-role** client (RLS blocks client writes); OAuth **`state`** param guards CSRF.
 
-- **4.0 Credentials** (needs you) — create Strava API app (Client ID/Secret, callback
-  domain `localhost`); add `STRAVA_CLIENT_ID`/`STRAVA_CLIENT_SECRET`/`STRAVA_REDIRECT_URI`
-  to `.env.local`. ☑ *when:* env vars present, app boots, `.env.example` already documents them.
-- **4.1 Strava lib** ☑ — `/src/lib/strava`: `constants.ts` (auth/token/api/deauth URLs,
-  scope), `types.ts` (token + activity shapes), `oauth.ts` (`buildAuthorizeUrl`,
-  `exchangeCode`, `refreshToken`, `server-only` guard). Typecheck + lint pass.
-- **4.2 Connect flow** ◐ — `GET /api/strava/connect`: httpOnly `state` cookie + redirect
-  to Strava; "Connect Strava" button on `/dashboard`. Code built + compiles; *live test
-  pending credentials (4.0).*
-- **4.3 Callback** ◐ — `GET /api/strava/callback`: validate `state`, `exchangeCode`, upsert
-  into `strava_accounts` via service role, redirect with `?strava=connected|denied|error`.
-  Code built + compiles; *live test pending credentials.*
-- **4.4 Token refresh** ◐ — `getValidAccessToken(userId)` in `strava/tokens.ts`: reads row,
-  refreshes within 60s of expiry, rotates + persists. Code built + compiles; *live test pending.*
-- **4.5 Sync now** ◐ — `strava/api.ts` (`fetchRecentActivities`, `StravaAuthError` on 401),
-  `strava/sync.ts` (normalize runs → `distance_m`/pace/etc., upsert on user+strava id),
-  `syncStrava` action + dashboard button. Code built + compiles; *live test pending creds.*
-- **4.6 Disconnect / revoke** ◐ — `disconnectStrava` action (best-effort `deauthorize`
-  then delete row); dashboard shows connected/not + recent runs + `?strava=` status
-  banners (incl. `revoked` → reconnect prompt). Code built + compiles; *live test pending.*
-- **4.7 Verify** — real end-to-end: connect → sync → activities appear → disconnect;
-  `/security-review` (token storage, `state` CSRF, no client secret leak).
-  ☑ *when:* full loop passes + security review clean.
+- **4.0 Credentials** ☑ — Strava app created (Client ID `262605`); keys in `.env.local`
+  (gitignored, server-side); app boots.
+- **4.1 Strava lib** ☑ — `/src/lib/strava`: `constants.ts`, `types.ts`, `oauth.ts`
+  (`buildAuthorizeUrl`/`exchangeCode`/`refreshToken`/`deauthorize`, `server-only` guard).
+- **4.2 Connect flow** ☑ — `GET /api/strava/connect`: httpOnly `state` cookie + redirect
+  to Strava; button on `/dashboard`. **Verified live** (landed on Strava authorize).
+- **4.3 Callback** ☑ — `GET /api/strava/callback`: validate `state`, `exchangeCode`, upsert
+  into `strava_accounts` via service role. **Verified live** (row created: athlete 195840822,
+  scope `read,activity:read`, tokens stored).
+- **4.4 Token refresh** ☑ — `getValidAccessToken(userId)`: refreshes within 60s of expiry,
+  rotates + persists. Code-verified (auto-fires near expiry).
+- **4.5 Sync now** ☑ — `strava/{api,sync}.ts` + `syncStrava` action + button.
+  **Verified live**: synced 12 runs, normalized correctly (km, pace s/km, dates); idempotent.
+- **4.6 Disconnect / revoke** ☑ — `disconnectStrava` (best-effort `deauthorize`, then
+  **clean-slate delete of activities + connection**); dashboard shows connected/not +
+  recent runs + `?strava=` status banners (`revoked` → reconnect). Verified live.
+- **4.7 Verify** ☑ — end-to-end connect → sync → runs appear → disconnect all confirmed;
+  `/security-review` clean (no HIGH/MEDIUM: `state` CSRF, service-role token writes, no
+  secret leak, no open redirect/SSRF).
 
-**Exit:** a connected user's Strava runs appear as normalized activities via a Sync button;
-tokens refresh automatically; disconnect/revoke handled cleanly.
+**Exit:** ☑ a connected user's Strava runs appear as normalized activities via a Sync
+button; tokens refresh automatically; disconnect is a clean slate.
 
 ---
 
