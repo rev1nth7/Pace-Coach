@@ -246,14 +246,12 @@ Step 7 AI coach.
   distance + week total; **past weeks unchanged** (history preserved); structure
   (weeks, phases, rest days, one long/week) intact. Deterministic.
 
-- **6.0/6.1 Types** — `plan/adaptTypes.ts`: `ActivityInput` (startDate, distanceM),
-  `AdaptInput` (plan, activities, evaluatedWeekNumber), `WeekMetrics`, `Adjustment`,
-  `AdaptationResult`. ☑ *when:* compiles; pure (no DB imports).
-- **6.2 Tests FIRST** — `plan/adaptPlan.test.ts`: metrics math, under/on/over
-  classification + factors, history preserved (weeks ≤ N identical), upcoming scaled,
-  activities outside week ignored, no-activities → scale_down, last-week edge, determinism.
-  ☑ *when:* tests written and **RED** against the stub.
-- **6.3 Framework stub** — `plan/adaptPlan.ts` typed stub. ☑ *when:* `npm test` runs red.
+- **6.0/6.1 Types** ☑ — `plan/adaptTypes.ts`: `ActivityInput`, `AdaptInput`, `WeekMetrics`,
+  `Adjustment`, `AdaptationResult`. Compiles; pure.
+- **6.2 Tests FIRST** ☑ — `plan/adaptPlan.test.ts`: 12 tests (metrics, classification +
+  factors, history preserved, upcoming scaled, out-of-week ignored, no-runs → scale_down,
+  last-week no-op, determinism). **RED**: 6 failing.
+- **6.3 Framework stub** ☑ — `plan/adaptPlan.ts` typed no-op stub; `npm test` runs red.
 - **6.4 Ralph Loop** 🔁 — implement `adaptPlan` until green. **Start with a completion
   promise / max-iterations so it self-terminates** (lesson from Step 5). ☑ *when:* all tests
   green, deterministic.
