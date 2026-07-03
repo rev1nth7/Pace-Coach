@@ -30,11 +30,12 @@ Get the workshop ready before writing feature code. One-time foundation step.
   (2 commits). Currently private; flip to public at Step 11.
 
 ### 0.2 MCP servers (tools Claude Code can drive)
-- ☐ **Supabase MCP** — manage schema, run migrations, inspect tables from within Claude.
-  **Pending a Supabase Personal Access Token** from the user (avatar → Account → Access
-  Tokens). Would make Step 3 migrations drivable directly instead of pasting SQL.
+- ☑ **Supabase MCP** — registered (local scope, scoped to project `bwczykbitphwcvbhwflu`),
+  health check **✔ Connected**. PAT stored in `~/.claude.json` (NOT in the repo). Tools
+  (`execute_sql`, `apply_migration`, `list_tables`…) activate on next session restart —
+  needed from Step 3 onward.
 - ⏸ **Vercel MCP** *(optional)* — deferred to Step 11.
-- ☐ Verify with `/mcp` and a smoke call before relying on them.
+- ☑ Verified via `claude mcp list` (Connected).
 
 ### 0.3 Claude Code skills to have on hand
 - ☐ `/run` — launch & drive the app to confirm changes work.
