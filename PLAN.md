@@ -229,15 +229,39 @@ weeks, a progressive long run, and a taper. Same input → same output (no rando
 
 ## Step 6 — Adaptive algorithm (planned vs actual) ⭐ 🔁 Ralph Loop candidate
 *The other half of the centerpiece — what makes this more than a CRUD app.*
-> **Workflow:** same as Step 5 — tests first, then Ralph Loop until green.
-- ☐ **Write unit tests first** covering over-/under-performance scenarios — these anchor
-  the Ralph Loop.
-- ☐ Logic in `/src/lib/plan` (or `/src/lib/adapt`): compare `activities` against planned
-  `workouts` (completion, pace vs target, volume).
-- ☐ Weekly adjustment rules (scale up/down, insert recovery, shift long run).
-- ☐ Recompute upcoming weeks; preserve history.
 
-**Exit:** next week's plan visibly adapts to last week's actual performance.
+**🎯 Goal:** a deterministic, unit-tested `adaptPlan(input)` in `/src/lib/plan` that
+evaluates a completed week (actual `activities` vs the planned week), classifies performance,
+and recomputes upcoming weeks — while preserving history. Its metrics + reason feed the
+Step 7 AI coach.
+
+**Signals & rules (encoded as tests — the loop targets these):**
+- **Match actuals → week** by date: an activity counts for the week whose Mon–Sun range
+  contains its `startDate`. `completedRuns` = count; `actualDistanceM` = sum.
+- **Metrics**: `completionRate = completedRuns / daysPerWeek`;
+  `volumeRatio = actualDistanceM / plannedWeek.totalDistanceM`.
+- **Classification** on `volumeRatio`: `< 0.7` → **scale_down** (factor 0.85);
+  `> 1.15` → **scale_up** (factor 1.1); else **hold** (1.0). No activities → scale_down.
+- **Apply** the factor to all **upcoming** weeks (> evaluated) — scale each workout's
+  distance + week total; **past weeks unchanged** (history preserved); structure
+  (weeks, phases, rest days, one long/week) intact. Deterministic.
+
+- **6.0/6.1 Types** — `plan/adaptTypes.ts`: `ActivityInput` (startDate, distanceM),
+  `AdaptInput` (plan, activities, evaluatedWeekNumber), `WeekMetrics`, `Adjustment`,
+  `AdaptationResult`. ☑ *when:* compiles; pure (no DB imports).
+- **6.2 Tests FIRST** — `plan/adaptPlan.test.ts`: metrics math, under/on/over
+  classification + factors, history preserved (weeks ≤ N identical), upcoming scaled,
+  activities outside week ignored, no-activities → scale_down, last-week edge, determinism.
+  ☑ *when:* tests written and **RED** against the stub.
+- **6.3 Framework stub** — `plan/adaptPlan.ts` typed stub. ☑ *when:* `npm test` runs red.
+- **6.4 Ralph Loop** 🔁 — implement `adaptPlan` until green. **Start with a completion
+  promise / max-iterations so it self-terminates** (lesson from Step 5). ☑ *when:* all tests
+  green, deterministic.
+- **6.5 Verify & review** — `/code-review`; confirm determinism + history preservation.
+  ☑ *when:* green + reviewed.
+
+**Exit:** next week's plan visibly adapts to last week's actual performance (tests green,
+reviewed, deterministic).
 
 ---
 
