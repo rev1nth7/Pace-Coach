@@ -25,18 +25,20 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 | 4 Strava OAuth + sync | ☑ *(verified live)* |
 | 5 Plan engine | ☑ *(22 tests, Ralph Loop)* |
 | 6 Adaptive algorithm | ☑ *(12 tests, Ralph Loop)* |
-| 8 Core UI — create + view plan | ☑ *(reordered before 7; engine now visible)* |
-| **7 AI Coach (OpenAI)** | ☐ **next** |
-| 9 Demo mode · 10 Stripe *(opt)* · 11 Landing + deploy | ☐ |
+| 8 Core UI — create + view plan | ☑ *(reordered before 7; engine visible)* |
+| 7 AI Coach (OpenAI) | ☑ *(server-side, cached, fallback)* |
+| **9 Demo mode** · 10 Stripe *(opt)* · **11 Landing + deploy** | ☐ **next** |
 
 **Working today (local):** signup/login → connect Strava → sync runs → generate a periodized
-plan → see it as a week-by-week calendar. **34 unit tests green.** Tags: `step-2`…`step-8`.
+plan → see it as a week-by-week calendar → AI coach note. **34 unit tests green.** Tags:
+`step-2`…`step-8`, `step-7`.
 
-**Not yet visible / shipped:** adaptive overlay on real runs, AI coach, charts, demo mode,
-**live deploy**.
+**Not yet shipped:** demo mode (seeded aligned data so adaptation narration shines), charts,
+plan-vs-actual overlay, **live deploy**.
 
-**Recommended next order (max resume impact):** wire `adaptPlan` to real synced runs (make
-the adaptation visible) → **Step 7 AI Coach** → **Step 9 demo mode** → **Step 11 deploy**.
+**Recommended next order (max resume impact):** **Step 9 demo mode** (seed a demo account so
+the adaptive + AI story is visible to visitors) → **Step 11 deploy** (live URL + landing) →
+optional polish (charts, plan-vs-actual overlay).
 
 ---
 

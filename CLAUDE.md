@@ -38,23 +38,27 @@ See PLAN.md for the full step-by-step build plan and current status.
   start a loop before the tests exist — it has nothing to anchor to.
 
 ## Current build stage
-Steps 0–3 done. GitHub repo live (github.com/rev1nth7/Pace-Coach, private); Supabase
-project + keys verified in `.env.local`; Supabase MCP registered & connected (tools active).
-Milestone tags: `step-2`, `step-3`.
+**Steps 0–8 done** (Step 8 was reordered before Step 7). GitHub live
+(github.com/rev1nth7/Pace-Coach, private); Supabase project + keys in `.env.local`; Supabase
+MCP connected; Strava + OpenAI keys in `.env.local`. **34 unit tests green.** Milestone tags:
+`step-2`…`step-8`. See PLAN.md "Status at a glance" for the table.
 
-- **Step 0–1** ☑ — scaffold, deps, `src/lib/{supabase,strava,ai,plan}`, env, git.
-- **Step 2 (Auth)** ☑ — `@supabase/ssr` clients (`src/lib/supabase/{client,server,middleware}.ts`),
-  root `src/middleware.ts` (session refresh + `/dashboard` protection), `(auth)/{login,signup}`
-  pages + `actions.ts` (signup/login/signOut, open-redirect-hardened), protected
-  `/dashboard`. Email confirmation OFF in Supabase (instant signup) via Management API.
-- **Step 3 (Schema)** ☑ — 6 tables (`profiles`, `strava_accounts`, `activities`, `plans`,
-  `weeks`, `workouts`) with RLS on all; signup trigger auto-creates `profiles`; enums
-  `goal_type`/`workout_type`; generated types in `src/lib/supabase/types.ts` wired into
-  clients as `createClient<Database>`. `get_advisors` clean (HIBP is Pro-only, deferred).
+- **0–1** ☑ scaffold, deps, `src/lib/{supabase,strava,ai,plan}`, env, git.
+- **2 Auth** ☑ `@supabase/ssr` clients, `src/middleware.ts` (session + `/dashboard` guard),
+  `(auth)/{login,signup}` + `actions.ts`, protected `/dashboard`. Email confirmation OFF.
+- **3 Schema** ☑ 6 tables + RLS on all, signup trigger, enums, generated `types.ts`.
+- **4 Strava** ☑ OAuth connect/callback, token refresh+rotate, "Sync now" → `activities`,
+  disconnect (clean slate). `src/lib/strava/*`, `/api/strava/*`. Verified live.
+- **5 Plan engine** ☑ `src/lib/plan/generatePlan.ts` (+ `dates.ts`) — deterministic,
+  periodized, 22 tests (built via Ralph Loop, tests-first).
+- **6 Adaptive** ☑ `src/lib/plan/adaptPlan.ts` — planned-vs-actual → scale up/down/hold,
+  12 tests (Ralph Loop).
+- **8 Core UI** ☑ `/plan/new` form + `createPlan`, `plan/persistence.ts` (save/load,
+  replace-on-create), `dashboard/PlanView.tsx` calendar. Engine now visible.
+- **7 AI Coach** ☑ `src/lib/ai/{coach,coachInput}.ts` — OpenAI (server-side, `server-only`,
+  `gpt-4o-mini`, fallback), cached on `weeks.coach_note`, dashboard "Coach" card.
 
-Deferred on purpose: Strava → Step 4, Vercel → Step 11.
-
-Next: **Step 4 — Strava integration** ⭐ (OAuth connect → callback stores tokens in
-`strava_accounts` → "Sync now" pulls runs into `activities`). Needs user to create a
-Strava API app (Client ID/Secret, callback domain `localhost`) and add keys to `.env.local`.
-Track progress against PLAN.md.
+Next: **Step 9 — Demo mode** (seed a demo account with a plan + aligned activities so the
+adaptive + AI story is visible to visitors with no signup), then **Step 11 — deploy to
+Vercel** (live URL + landing page). Optional polish: charts (`dataviz`), plan-vs-actual
+overlay. Track progress against PLAN.md.
