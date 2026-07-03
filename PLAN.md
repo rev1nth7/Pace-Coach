@@ -213,14 +213,17 @@ weeks, a progressive long run, and a taper. Same input → same output (no rando
   progression, phase ordering, recovery every 4th, taper, determinism, mid-week goal).
   **RED**: 9 failed / 13 passed (assertion-level).
 - **5.3 Framework stub** ☑ — `plan/generatePlan.ts` typed stub; `npm test` runs red.
-- **5.4 Ralph Loop** 🔁 — run `ralph-loop` to implement `generatePlan` until all tests green.
-  ☑ *when:* 100% of tests pass; output deterministic.
-- **5.5 Verify & review** — `/code-review` the generated algorithm; confirm determinism
-  (run twice → identical). *(A `createPlan` server action + UI is deferred to Step 8.)*
-  ☑ *when:* green + reviewed + deterministic.
+- **5.4 Ralph Loop** ☑ 🔁 — implemented `generatePlan` + `dates.ts`; **all 22 tests green**,
+  typecheck + lint clean, deterministic. Loop cancelled (iteration 1).
+- **5.5 Verify & review** ☑ — `/code-review` clean (no correctness bugs; determinism via
+  UTC math, no `Date.now`). One noted edge for Step 8 (below). `createPlan` action + UI
+  deferred to Step 8.
 
-**Exit:** given user inputs, generate a structured, testable training plan (tests green,
-reviewed, deterministic).
+> **Step 8 TODO (from 5.5 review):** a non-Sunday `goalDate` drops the final week's Sunday
+> long run (kept consistent with tests). Handle in the create-plan UI by snapping `goalDate`
+> to its race-week Sunday, or place the race as the final workout on `goalDate`.
+
+**Exit:** ☑ deterministic, unit-tested plan engine — 22 tests green, reviewed.
 
 ---
 
