@@ -50,9 +50,14 @@ export default async function DashboardPage() {
 
         <div className="mt-8 rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Your training plan will appear here. Connect Strava and generate a plan
-            in the upcoming build steps.
+            Connect your Strava account to sync your runs. Plan generation comes next.
           </p>
+          <a
+            href="/api/strava/connect"
+            className="mt-4 inline-block rounded-lg bg-[#fc4c02] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#e34402]"
+          >
+            Connect Strava
+          </a>
         </div>
       </section>
     </main>
