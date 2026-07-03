@@ -11,9 +11,10 @@ export interface ActivePlan {
 }
 
 /**
- * Persist a generated plan for a user: archives any existing active plan, then
- * inserts the plan, its weeks, and their workouts. Uses the passed (user-session)
- * client so RLS scopes every write to the owner. Returns the new plan id.
+ * Persist a generated plan for a user: replaces any existing plan (delete
+ * cascades to its weeks + workouts — one active plan at a time), then inserts
+ * the plan, its weeks, and their workouts. Uses the passed (user-session) client
+ * so RLS scopes every write to the owner. Returns the new plan id.
  */
 export async function savePlan(
   supabase: DB,
@@ -21,11 +22,7 @@ export async function savePlan(
   input: PlanInput,
   plan: GeneratedPlan,
 ): Promise<string> {
-  await supabase
-    .from("plans")
-    .update({ status: "archived" })
-    .eq("user_id", userId)
-    .eq("status", "active");
+  await supabase.from("plans").delete().eq("user_id", userId);
 
   const { data: planRow, error: planErr } = await supabase
     .from("plans")
