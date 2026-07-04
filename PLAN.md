@@ -28,18 +28,24 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 | 8 Core UI — create + view plan | ☑ *(reordered before 7; engine visible)* |
 | 7 AI Coach (OpenAI) | ☑ *(server-side, cached, fallback)* |
 | **9 Demo mode** (9.1–9.6) | ☑ *(seeded, adaptation narrated, guarded)* |
-| 10 Stripe *(opt)* · **11 Landing + deploy** | ☐ **next** |
+| **11 Landing + deploy** | ◐ *(landing + README done; Vercel import in progress)* |
+| 10 Stripe *(opt)* | ☐ *(optional, likely skip)* |
 
 **Working today (local):** signup/login **or "Try the demo"** → connect Strava → sync runs →
 generate a periodized plan → see it as a week-by-week calendar → AI coach note that narrates a
 real adaptation. Demo account seeds a mid-stream plan + aligned runs so the adaptive + AI story
-is visible with no signup. **38 unit tests green.** Tags: `step-2`…`step-8`, `step-7`.
+is visible with no signup. **38 unit tests green.** Tags: `step-2`…`step-9`, `step-7`.
 
-**Not yet shipped:** charts, plan-vs-actual overlay, **live deploy**.
+**Not yet shipped:** charts, plan-vs-actual overlay, **live deploy** (mid-flight).
 
-**Recommended next order (max resume impact):** **Step 11 deploy** (live URL + landing — the
-landing hero already exists; add Vercel env incl. `DEMO_*`, prod Strava callback, run the seed
-route once, README) → optional polish (charts, plan-vs-actual overlay).
+**Deploy status (Step 11):** landing hero ☑ and recruiter README ☑ committed + pushed
+(`7a89f87`). Method chosen: **Vercel dashboard git-import**. Waiting on: user to import the repo
++ set env vars + first deploy → then wire the prod URL into `STRAVA_REDIRECT_URI` /
+`NEXT_PUBLIC_SITE_URL`, set Strava callback domain, run the seed route against prod, and paste
+the live URL into the README. See Step 11 below for the exact checklist.
+
+**Recommended next order (max resume impact):** **finish Step 11 deploy** → optional polish
+(charts, plan-vs-actual overlay).
 
 ---
 
@@ -429,14 +435,36 @@ specifically want "integrated Stripe payments" on the resume — and if so, keep
 
 ---
 
-## Step 11 — Landing page + deploy to Vercel
-- ☐ Simple landing page: what PaceCoach is, a screenshot/GIF, "Try the demo" + "Sign up".
-- ☐ Configure env vars in Vercel (production + preview).
-- ☐ Update Strava callback domain to the production domain; add it to Supabase redirect URLs.
-- ☐ Add `OPENAI_API_KEY` to Vercel env (server-side).
-- ☐ Deploy; smoke-test auth, Strava connect, plan gen, adapt, AI coach, and demo mode.
-- ☐ `README.md` with the live URL, a screenshot, the stack, and a short "how it works"
-  on the adaptive algorithm + AI coach — this is the recruiter's entry point.
+## Step 11 — Landing page + deploy to Vercel  ◐ *(in progress)*
+
+**Method:** Vercel **dashboard git-import** (auto-deploy on push + preview deploys).
+
+- ☑ **Landing page** — real hero on `/` (replaces Next boilerplate): tagline, three feature
+  cards, **Try the demo** / **Sign up** / **Log in**. *(Built in Step 9; screenshot/GIF still
+  to add to the README after deploy.)*
+- ☑ **README** — recruiter-facing: live-URL placeholder, stack, "why it's interesting"
+  (deterministic engine + AI narration), architecture, local dev, env table, seed instructions.
+  Committed + pushed (`7a89f87`). *(Live URL + screenshot filled in after first deploy.)*
+- ☑ **Repo pushed** — `main` @ `7a89f87` on GitHub; `step-9` tag pushed.
+- ☐ **Import repo to Vercel** — new project from `rev1nth7/Pace-Coach` (Next.js auto-detected).
+- ☐ **Configure env vars** (Production + Preview) — all 11 from `.env.local`:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `OPENAI_API_KEY`, `DEMO_EMAIL`, `DEMO_PASSWORD`,
+  `DEMO_SEED_SECRET`, plus `STRAVA_REDIRECT_URI` + `NEXT_PUBLIC_SITE_URL` (set to the prod URL
+  once known — temp values are fine for the first build).
+- ☐ **First deploy** → capture the production URL (`https://<domain>.vercel.app`).
+- ☐ **Wire the prod URL** — set `STRAVA_REDIRECT_URI=https://<domain>/api/strava/callback` +
+  `NEXT_PUBLIC_SITE_URL=https://<domain>`, redeploy.
+- ☐ **Strava** — set Authorization Callback Domain to `<domain>` (Strava → settings → API).
+- ☐ **Supabase** *(optional)* — add `<domain>` to Auth → URL Configuration → Site URL.
+- ☐ **Seed prod** — `curl -X POST https://<domain>/api/demo/seed -H "x-seed-secret: <secret>"`.
+- ☐ **Smoke-test** — Try-the-demo (populated), signup/login, Strava connect, plan gen, adapt,
+  AI coach note.
+- ☐ **Finish README** — drop in the live URL + a dashboard screenshot; commit + push.
+- ☐ *(Optional)* flip the GitHub repo to **public**.
+
+**Blocked on:** user completing the Vercel import + first deploy, then handing back the prod
+URL (the callback/site-URL wiring and prod seeding follow from it).
 
 **Exit:** PaceCoach is live on Vercel with a shareable URL and a resume-ready README.
 
