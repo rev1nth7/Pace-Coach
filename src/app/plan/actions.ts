@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoEmail } from "@/lib/demo/config";
 import { addDays, dayOfWeekMon0 } from "@/lib/plan/dates";
 import { generatePlan } from "@/lib/plan/generatePlan";
 import { savePlan } from "@/lib/plan/persistence";
@@ -46,6 +47,9 @@ export async function createPlan(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) {
     redirect("/login?redirectTo=/plan/new");
+  }
+  if (isDemoEmail(user.email)) {
+    redirect("/dashboard?demo=readonly");
   }
 
   const input = {

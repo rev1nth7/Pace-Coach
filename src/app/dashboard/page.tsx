@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActivePlan } from "@/lib/plan/persistence";
 import { addDays } from "@/lib/plan/dates";
+import { isDemoEmail } from "@/lib/demo/config";
 import { signOut } from "../(auth)/actions";
 import { disconnectStrava, refreshCoachNote, syncStrava } from "./actions";
 import { PlanView } from "./PlanView";
@@ -65,9 +66,14 @@ function formatDate(iso: string): string {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ strava?: string; count?: string; plan?: string }>;
+  searchParams: Promise<{
+    strava?: string;
+    count?: string;
+    plan?: string;
+    demo?: string;
+  }>;
 }) {
-  const { strava, count, plan } = await searchParams;
+  const { strava, count, plan, demo } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -76,6 +82,8 @@ export default async function DashboardPage({
   if (!user) {
     redirect("/login?redirectTo=/dashboard");
   }
+
+  const isDemo = isDemoEmail(user.email);
 
   const activePlan = await getActivePlan(supabase, user.id);
 
@@ -140,6 +148,21 @@ export default async function DashboardPage({
           .
         </p>
 
+        {isDemo ? (
+          <p className="mt-6 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-300">
+            👋 You&apos;re exploring a <strong>read-only demo</strong> — the plan
+            and runs are pre-seeded. Try <strong>Regenerate</strong> on the coach
+            note to see the AI live.
+          </p>
+        ) : null}
+
+        {demo === "readonly" ? (
+          <p className="mt-6 rounded-lg bg-amber-50 px-4 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+            That action is disabled in the demo. Sign up for a free account to
+            create your own plan.
+          </p>
+        ) : null}
+
         {banner ? (
           <p
             className={
@@ -166,12 +189,14 @@ export default async function DashboardPage({
                 <h2 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
                   Your plan
                 </h2>
-                <Link
-                  href="/plan/new"
-                  className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-                >
-                  New plan
-                </Link>
+                {!isDemo ? (
+                  <Link
+                    href="/plan/new"
+                    className="text-sm text-gray-500 underline underline-offset-2 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  >
+                    New plan
+                  </Link>
+                ) : null}
               </div>
 
               {/* AI coach note */}
@@ -234,7 +259,7 @@ export default async function DashboardPage({
               </p>
             </div>
 
-            {isConnected ? (
+            {isDemo ? null : isConnected ? (
               <div className="flex items-center gap-3">
                 <form action={syncStrava}>
                   <button

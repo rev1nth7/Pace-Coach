@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { login } from "../actions";
+import { login, loginDemo } from "../actions";
 import { AuthForm } from "../AuthForm";
 
 export default async function LoginPage({
@@ -31,6 +31,15 @@ export default async function LoginPage({
           >
             Sign up
           </Link>
+          {" · "}
+          <form action={loginDemo} className="inline">
+            <button
+              type="submit"
+              className="font-medium text-gray-900 underline underline-offset-2 dark:text-gray-100"
+            >
+              Try the demo
+            </button>
+          </form>
         </>
       }
     />

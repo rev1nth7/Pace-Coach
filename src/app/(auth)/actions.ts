@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getDemoCredentials } from "@/lib/demo/config";
 
 /**
  * Only allow redirects to internal, single-slash paths. Rejects absolute URLs
@@ -66,6 +67,30 @@ export async function login(formData: FormData) {
 
   revalidatePath("/", "layout");
   redirect(redirectTo);
+}
+
+/**
+ * Sign into the shared, read-only demo account — no signup. Used by the
+ * "Try the demo" buttons. Credentials are server-side env only.
+ */
+export async function loginDemo() {
+  const creds = getDemoCredentials();
+  if (!creds) {
+    redirect(
+      `/login?error=${encodeURIComponent("Demo is not available right now.")}`,
+    );
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword(creds);
+  if (error) {
+    redirect(
+      `/login?error=${encodeURIComponent("Demo is not available right now.")}`,
+    );
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
 }
 
 /** Sign the current user out and return them to the login page. */

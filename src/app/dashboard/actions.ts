@@ -11,8 +11,9 @@ import { getActivePlan } from "@/lib/plan/persistence";
 import { addDays } from "@/lib/plan/dates";
 import { buildCoachInput } from "@/lib/ai/coachInput";
 import { generateCoachNote } from "@/lib/ai/coach";
+import { isDemoEmail } from "@/lib/demo/config";
 
-async function requireUserId(): Promise<string> {
+async function requireUser(): Promise<{ id: string; email: string | null }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -20,12 +21,15 @@ async function requireUserId(): Promise<string> {
   if (!user) {
     redirect("/login?redirectTo=/dashboard");
   }
-  return user.id;
+  return { id: user.id, email: user.email ?? null };
 }
 
 /** Pull recent Strava runs into `activities`. */
 export async function syncStrava() {
-  const userId = await requireUserId();
+  const { id: userId, email } = await requireUser();
+  if (isDemoEmail(email)) {
+    redirect("/dashboard?demo=readonly");
+  }
 
   let synced = 0;
   try {
@@ -43,7 +47,10 @@ export async function syncStrava() {
 
 /** Disconnect Strava: best-effort deauthorize, then remove stored tokens. */
 export async function disconnectStrava() {
-  const userId = await requireUserId();
+  const { id: userId, email } = await requireUser();
+  if (isDemoEmail(email)) {
+    redirect("/dashboard?demo=readonly");
+  }
   const admin = createAdminClient();
 
   const { data: account } = await admin
@@ -71,7 +78,7 @@ export async function disconnectStrava() {
 
 /** Generate (or regenerate) the AI coaching note for the current plan week. */
 export async function refreshCoachNote() {
-  const userId = await requireUserId();
+  const { id: userId } = await requireUser();
   const supabase = await createClient();
 
   const activePlan = await getActivePlan(supabase, userId);

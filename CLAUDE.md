@@ -38,9 +38,9 @@ See PLAN.md for the full step-by-step build plan and current status.
   start a loop before the tests exist — it has nothing to anchor to.
 
 ## Current build stage
-**Steps 0–8 done** (Step 8 was reordered before Step 7). GitHub live
+**Steps 0–9 done** (Step 8 was reordered before Step 7). GitHub live
 (github.com/rev1nth7/Pace-Coach, private); Supabase project + keys in `.env.local`; Supabase
-MCP connected; Strava + OpenAI keys in `.env.local`. **34 unit tests green.** Milestone tags:
+MCP connected; Strava + OpenAI + `DEMO_*` keys in `.env.local`. **38 unit tests green.** Milestone tags:
 `step-2`…`step-8`. See PLAN.md "Status at a glance" for the table.
 
 - **0–1** ☑ scaffold, deps, `src/lib/{supabase,strava,ai,plan}`, env, git.
@@ -57,8 +57,13 @@ MCP connected; Strava + OpenAI keys in `.env.local`. **34 unit tests green.** Mi
   replace-on-create), `dashboard/PlanView.tsx` calendar. Engine now visible.
 - **7 AI Coach** ☑ `src/lib/ai/{coach,coachInput}.ts` — OpenAI (server-side, `server-only`,
   `gpt-4o-mini`, fallback), cached on `weeks.coach_note`, dashboard "Coach" card.
+- **9 Demo mode** ☑ `src/lib/demo/{config,seed}.ts` + `POST /api/demo/seed` (secret-guarded,
+  idempotent, re-runnable in prod). Seeds a mid-stream half-marathon plan + aligned runs
+  (last completed week under-target → `adaptPlan` scale_down → coach narrates it). `loginDemo`
+  action + landing hero ("Try the demo"). Shared account is guarded read-only (create/sync/
+  disconnect blocked for the demo user via `isDemoEmail`). Env: `DEMO_EMAIL`, `DEMO_PASSWORD`,
+  `DEMO_SEED_SECRET`. **After deploy: run the seed route once against prod.**
 
-Next: **Step 9 — Demo mode** (seed a demo account with a plan + aligned activities so the
-adaptive + AI story is visible to visitors with no signup), then **Step 11 — deploy to
-Vercel** (live URL + landing page). Optional polish: charts (`dataviz`), plan-vs-actual
-overlay. Track progress against PLAN.md.
+Next: **Step 11 — deploy to Vercel** (add env incl. `DEMO_*`, prod Strava callback + Supabase
+redirect, run the seed route once, README with live URL). Optional polish: charts (`dataviz`),
+plan-vs-actual overlay. Track progress against PLAN.md.

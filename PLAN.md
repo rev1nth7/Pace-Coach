@@ -15,7 +15,7 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 
 ---
 
-## Status at a glance *(updated 2026-07-03)*
+## Status at a glance *(updated 2026-07-04)*
 
 | Step | Status |
 |------|--------|
@@ -27,18 +27,19 @@ Strava API · **OpenAI** (AI coaching layer) · Vercel. *(Stripe optional — se
 | 6 Adaptive algorithm | ☑ *(12 tests, Ralph Loop)* |
 | 8 Core UI — create + view plan | ☑ *(reordered before 7; engine visible)* |
 | 7 AI Coach (OpenAI) | ☑ *(server-side, cached, fallback)* |
-| **9 Demo mode** · 10 Stripe *(opt)* · **11 Landing + deploy** | ☐ **next** |
+| **9 Demo mode** (9.1–9.6) | ☑ *(seeded, adaptation narrated, guarded)* |
+| 10 Stripe *(opt)* · **11 Landing + deploy** | ☐ **next** |
 
-**Working today (local):** signup/login → connect Strava → sync runs → generate a periodized
-plan → see it as a week-by-week calendar → AI coach note. **34 unit tests green.** Tags:
-`step-2`…`step-8`, `step-7`.
+**Working today (local):** signup/login **or "Try the demo"** → connect Strava → sync runs →
+generate a periodized plan → see it as a week-by-week calendar → AI coach note that narrates a
+real adaptation. Demo account seeds a mid-stream plan + aligned runs so the adaptive + AI story
+is visible with no signup. **38 unit tests green.** Tags: `step-2`…`step-8`, `step-7`.
 
-**Not yet shipped:** demo mode (seeded aligned data so adaptation narration shines), charts,
-plan-vs-actual overlay, **live deploy**.
+**Not yet shipped:** charts, plan-vs-actual overlay, **live deploy**.
 
-**Recommended next order (max resume impact):** **Step 9 demo mode** (seed a demo account so
-the adaptive + AI story is visible to visitors) → **Step 11 deploy** (live URL + landing) →
-optional polish (charts, plan-vs-actual overlay).
+**Recommended next order (max resume impact):** **Step 11 deploy** (live URL + landing — the
+landing hero already exists; add Vercel env incl. `DEMO_*`, prod Strava callback, run the seed
+route once, README) → optional polish (charts, plan-vs-actual overlay).
 
 ---
 
@@ -363,13 +364,57 @@ dashboard — the Step 5/6 engine made visible.
 
 ## Step 9 — Demo mode ⭐ (showcase essential)
 *No recruiter will connect their own Strava. This is what makes the live link explorable.*
-- ☐ Seed a demo account with a realistic plan + several weeks of "actual" activities.
-- ☐ **"Try the demo"** button on the landing page → instant read-only (or sandboxed)
-  session into that account, no signup.
-- ☐ Ensure the adaptive algorithm shows a visible plan change in the seeded data.
-- ☐ Seed data rich enough that the AI Coach note (Step 7) has something real to say.
 
-**Exit:** anyone with the URL can click "Try the demo" and explore a live, populated app.
+**🎯 Goal:** a signed-out visitor clicks **"Try the demo"**, lands on a fully populated
+`/dashboard` (no signup) — a mid-stream training plan, several weeks of real "actual" runs,
+and an AI coach note that narrates a *genuine* adaptation the engine computed from that data.
+
+**Design / decisions (sensible defaults, flippable):**
+- **Single shared demo account** (`DEMO_EMAIL` / `DEMO_PASSWORD`, server-side env). "Try the
+  demo" signs into it — a real Supabase session, no signup. *(Flip to per-visitor sandboxes
+  only if abuse becomes a problem.)*
+- **Seeded via a secret-guarded route** `POST /api/demo/seed` (guarded by `DEMO_SEED_SECRET`).
+  Runs in the Next runtime so the `server-only` coach works and it's **re-runnable in prod on
+  Vercel** — no standalone script, no new deps.
+- **Plan is generated mid-stream:** goal date ~3 weeks out so the deterministic engine clamps
+  to its min length (half = 8 wks) and yields **~4–5 completed weeks + a current week + taper**.
+  Synthetic `activities` fill the completed weeks; the **most-recent completed week is
+  deliberately under-target (~60%)** so `adaptPlan` classifies **scale_down** — a real, visible
+  adaptation for the coach to explain.
+- **Shared account is guarded read-only:** destructive actions (create plan, disconnect, sync)
+  are blocked + hidden for the demo user; **Regenerate note is kept** (shows the AI live).
+
+- **9.1 Demo config + env** ☑ — `DEMO_EMAIL`, `DEMO_PASSWORD`, `DEMO_SEED_SECRET` in
+  `.env.local` + documented in `.env.example`; `src/lib/demo/config.ts` with `isDemoEmail()`.
+  - ✅ **Success:** typecheck + lint pass; `isDemoEmail` true only for the demo address;
+    `.env.example` documents all three vars (no secrets committed).
+- **9.2 Seed builder + test** ☑ — `src/lib/demo/seed.ts`: a pure builder →
+  `{ planInput, activities }`, dates computed relative to a passed `today` so it's stable on
+  any run date. Fills completed weeks with aligned runs; last completed week under-target.
+  - ✅ **Success:** a unit test (fixed `today`) asserts the generated plan has **≥3 completed
+    weeks + a current week + ≥1 future week**, and that `adaptPlan` on the last completed week
+    returns **`scale_down`**. `npm test` green.
+- **9.3 Seed route** ☑ — `POST /api/demo/seed` (secret-guarded): idempotently ensure the demo
+  auth user; wipe its plan/activities/connection; `savePlan`; insert a dummy `strava_accounts`
+  row + synthetic `activities`; pre-generate & store the coach note on the current week.
+  - ✅ **Success:** calling it twice leaves **exactly one** active plan, N activities, one
+    connection row, and a populated coach note (no duplicates); returns a JSON summary.
+- **9.4 "Try the demo" flow** ☑ — `loginDemo` server action (signs into the demo account) +
+  a real landing hero on `/` (replaces the Next boilerplate) with **Try the demo / Sign up /
+  Log in**. *(Landing gets its full polish in Step 11.)*
+  - ✅ **Success:** from a signed-out browser, "Try the demo" lands on `/dashboard` as the demo
+    user with the seeded plan + coach note + recent runs visible — no signup.
+- **9.5 Guard the shared account** ☑ — `isDemoEmail` gates `createPlan`, `disconnectStrava`,
+  `syncStrava` (return early with a notice); dashboard hides those buttons for the demo user
+  and shows a "You're exploring a read-only demo" banner; Regenerate kept.
+  - ✅ **Success:** as the demo user the destructive buttons are absent/blocked and the seeded
+    data survives clicking around; a normal signed-up user is unaffected.
+- **9.6 Verify** ☑ — seed → Try demo → adapted coach note + calendar + runs; re-seed restores
+  cleanly; `npm run typecheck && lint && build && test` green; `/code-review` on the diff.
+  - ✅ **Success:** the full demo works from a fresh incognito session; all checks green.
+
+**Exit:** anyone with the URL can click "Try the demo" and explore a live, populated app whose
+AI coach explains a real adaptation from seeded data.
 
 ---
 
