@@ -10,7 +10,7 @@ impressive, not to earn revenue. Scope is deliberately lean so it ships with a l
 See PLAN.md for the full step-by-step build plan and current status.
 
 ## Stack
-- Next.js 14+ (App Router, TypeScript, src/ directory)
+- Next.js 16 (App Router, TypeScript, src/ directory)
 - Tailwind CSS
 - Supabase (auth + Postgres database)
 - Strava API (OAuth, activity sync)

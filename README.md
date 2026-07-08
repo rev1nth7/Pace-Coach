@@ -8,8 +8,7 @@ language — *why* the plan changed.
 > 🔗 **Live demo:** <!-- LIVE_URL --> _(add after deploy)_ — click **"Try the demo"**
 > for a fully populated account, no signup required.
 
-<!-- Add a screenshot/GIF of the dashboard here after deploy:
-![PaceCoach dashboard](docs/screenshot.png) -->
+![PaceCoach dashboard — AI coach note, adaptive 8-week plan calendar, and synced Strava runs](screenshots/04-dashboard-demo.png)
 
 ---
 
